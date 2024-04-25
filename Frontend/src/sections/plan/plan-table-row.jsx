@@ -20,6 +20,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
+import EditPlanDialog from './plan-edit-dialog';
+
 // ----------------------------------------------------------------------
 
 export default function UserTableRow({
@@ -35,13 +37,18 @@ export default function UserTableRow({
   handleClick,
 }) {
   const [open, setOpen] = useState(null);
-  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
+  const [isConfirmationDeleteOpen, setConfirmationOpen] = useState(false);
+  const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
+    setOpen(null);
+  };
+  const handleEditDialogMenu = () => {
+    setConfirmationEditOpen(true);
     setOpen(null);
   };
   const handleDelete = async () => {
@@ -110,11 +117,8 @@ export default function UserTableRow({
         onClose={handleCloseMenu}
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: { width: 140 },
-        }}
       >
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem onClick={handleEditDialogMenu}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
         </MenuItem>
@@ -127,7 +131,7 @@ export default function UserTableRow({
 
       {/* Confirmation Dialog */}
       <Dialog
-        open={isConfirmationOpen}
+        open={isConfirmationDeleteOpen}
         onClose={() => setConfirmationOpen(false)}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -145,6 +149,20 @@ export default function UserTableRow({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Dialog */}
+
+      <EditPlanDialog
+        id={id}
+        isConfirmationEditOpen={isConfirmationEditOpen}
+        setConfirmationEditOpen={setConfirmationEditOpen}
+        name={name}
+        fetchPlans={fetchPlans}
+        description={description}
+        duration={duration}
+        price={price}
+        status={status}
+      />
     </>
   );
 }

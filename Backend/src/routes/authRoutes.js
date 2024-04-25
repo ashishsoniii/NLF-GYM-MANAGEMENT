@@ -169,7 +169,7 @@ router.post("/adminLogin", async (req, res) => {
 
     // If admin not found, return error
     if (!admin) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Invalid email!" });
     }
 
     // Compare passwords
@@ -177,7 +177,7 @@ router.post("/adminLogin", async (req, res) => {
 
     // If passwords don't match, return error
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Invalid Password!" });
     }
 
     // Generate JWT token
