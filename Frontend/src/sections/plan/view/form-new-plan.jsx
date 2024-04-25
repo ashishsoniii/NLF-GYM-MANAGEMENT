@@ -1,4 +1,5 @@
 import axios from 'axios';
+import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
 import Grid from '@mui/material/Grid';
@@ -6,7 +7,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-export default function AddPlanForm() {
+export default function AddPlanForm({ setClickedTitle }) {
   const [planData, setPlanData] = useState({
     name: '',
     duration: '',
@@ -43,6 +44,7 @@ export default function AddPlanForm() {
       });
       // Clear any previous errors
       setError('Plan Added Successfully');
+      setClickedTitle('All Plans');
     } catch (error) {
       console.error('Error adding plan:', error);
       // Display error message
@@ -113,3 +115,7 @@ export default function AddPlanForm() {
     </Grid>
   );
 }
+
+AddPlanForm.propTypes = {
+  setClickedTitle: PropTypes.func,
+};

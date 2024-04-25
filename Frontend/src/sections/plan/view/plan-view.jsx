@@ -194,6 +194,7 @@ export default function PlanPage() {
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((row) => (
                         <UserTableRow
+                          fetchPlans={fetchPlans}
                           key={row._id}
                           id={row._id}
                           name={row.name}
@@ -232,7 +233,7 @@ export default function PlanPage() {
         {clickedTitle === 'New Plan' && (
           <>
             {/* add new pla n here */}
-            <AddPlanForm />
+            <AddPlanForm setClickedTitle={setClickedTitle} />
           </>
         )}{' '}
       </Card>

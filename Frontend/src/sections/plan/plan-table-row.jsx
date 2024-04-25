@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
@@ -17,6 +18,7 @@ import Iconify from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export default function UserTableRow({
+  fetchPlans,
   selected,
   id,
   avatarUrl,
@@ -34,6 +36,30 @@ export default function UserTableRow({
   };
 
   const handleCloseMenu = () => {
+    setOpen(null);
+  };
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      // Send DELETE request to delete the plan
+      const response = await axios.delete(`http://localhost:3001/plan/${id}`, {
+        headers: {
+          Authorization: `${token}`, // Include the token in the Authorization header
+        },
+      });
+
+      // Refresh plans after successful deletion
+      fetchPlans();
+      console.log('Plan deleted successfully:', response.data);
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+
+      // Display error message or notification
+      // For example, you can use a state variable to store the error message and display it in your UI
+      // setError(error.message);
+    }
+
     setOpen(null);
   };
 
@@ -86,7 +112,7 @@ export default function UserTableRow({
           Edit
         </MenuItem>
 
-        <MenuItem onClick={handleCloseMenu} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
@@ -99,6 +125,7 @@ UserTableRow.propTypes = {
   avatarUrl: PropTypes.any,
   name: PropTypes.any,
   handleClick: PropTypes.func,
+  fetchPlans: PropTypes.func,
   price: PropTypes.any,
   id: PropTypes.any,
   description: PropTypes.any,
