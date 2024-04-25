@@ -39,6 +39,7 @@ export default function UserTableRow({
   const [open, setOpen] = useState(null);
   const [isConfirmationDeleteOpen, setConfirmationOpen] = useState(false);
   const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
+  const [isConfirmationActivateOpen, setConfirmationActivateOpen] = useState(false);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -77,6 +78,42 @@ export default function UserTableRow({
     setOpen(null);
   };
 
+  const handleActivate = async () => {
+    setConfirmationActivateOpen(false);
+    try {
+      setOpen(null);
+      const token = localStorage.getItem('token');
+      const response = await axios.patch(`http://localhost:3001/plan/${id}/activate`, null, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      fetchPlans();
+
+      console.log('Plan activated successfully:', response.data);
+    } catch (error) {
+      console.error('Error activating plan:', error);
+    }
+  };
+
+  const handleDeactivate = async () => {
+    setConfirmationActivateOpen(false);
+    try {
+      setOpen(null);
+      const token = localStorage.getItem('token');
+      const response = await axios.patch(`http://localhost:3001/plan/${id}/deactivate`, null, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      fetchPlans();
+
+      console.log('Plan deactivated successfully:', response.data);
+    } catch (error) {
+      console.error('Error deactivating plan:', error);
+    }
+  };
+
   return (
     <>
       <TableRow hover tabIndex={-1} duration="checkbox" selected={selected}>
@@ -101,7 +138,7 @@ export default function UserTableRow({
         <TableCell align="center">{price}</TableCell>
 
         <TableCell>
-          <Label color={(status === 'banned' && 'error') || 'success'}>{status}</Label>
+          <Label color={status === 'active' ? 'success' : 'error'}>{status}</Label>
         </TableCell>
 
         <TableCell align="right">
@@ -127,6 +164,18 @@ export default function UserTableRow({
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
+
+        {status === 'active' ? (
+          <MenuItem onClick={() => setConfirmationActivateOpen(true)}>
+            <Iconify icon="eva:power-outline" sx={{ mr: 2 }} />
+            Deactivate
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => setConfirmationActivateOpen(true)}>
+            <Iconify icon="eva:power-outline" sx={{ mr: 2 }} />
+            Activate
+          </MenuItem>
+        )}
       </Popover>
 
       {/* Confirmation Dialog */}
@@ -149,6 +198,16 @@ export default function UserTableRow({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmationDialog
+        open={isConfirmationActivateOpen}
+        setOpen={setConfirmationActivateOpen}
+        title={status === 'active' ? 'Confirm Deactivation' : 'Confirm Activation'}
+        content={`Are you sure you want to ${
+          status === 'active' ? 'deactivate' : 'activate'
+        } ${name}?`}
+        onConfirm={status === 'active' ? handleDeactivate : handleActivate}
+      />
 
       {/* Edit Dialog */}
 
@@ -178,4 +237,40 @@ UserTableRow.propTypes = {
   duration: PropTypes.any,
   selected: PropTypes.any,
   status: PropTypes.string,
+};
+
+function ConfirmationDialog({ open, setOpen, title, content, onConfirm }) {
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleConfirm = () => {
+    onConfirm();
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        <Typography variant="body1">{content}</Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={handleConfirm} color="error">
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+ConfirmationDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  content: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 };

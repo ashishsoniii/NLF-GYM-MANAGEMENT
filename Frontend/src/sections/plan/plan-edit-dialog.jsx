@@ -61,6 +61,7 @@ function EditPlanDialog({
 
   return (
     <>
+    {/* dialog */}
       <Dialog
         open={isConfirmationEditOpen}
         onClose={() => setConfirmationEditOpen(false)}
@@ -145,7 +146,7 @@ EditPlanDialog.propTypes = {
   isConfirmationEditOpen: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
   duration: PropTypes.string.isRequired,
-  status: PropTypes.string.isRequired,
+  // status: PropTypes.string.isRequired,
   price: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
