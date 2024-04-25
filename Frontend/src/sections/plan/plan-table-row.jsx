@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import Stack from '@mui/material/Stack';
 import Dialog from '@mui/material/Dialog';
-import Avatar from '@mui/material/Avatar';
+// import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
@@ -79,7 +79,7 @@ export default function UserTableRow({
 
         <TableCell component="th" scope="row" padding="none">
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Avatar alt={id} src={avatarUrl} />
+            {/* <Avatar alt={id} src={avatarUrl} /> */}
             <Typography variant="subtitle2" noWrap>
               {id}
             </Typography>
