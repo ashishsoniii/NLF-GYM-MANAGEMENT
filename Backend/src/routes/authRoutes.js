@@ -109,6 +109,51 @@ router.post("/adminRegistration", async (req, res) => {
   }
 });
 
+
+
+// Trainer Login
+
+// Trainer login route
+router.post("/trainerLogin", async (req, res) => {
+  try {
+    // Extract email and password from request body
+    const { email, password } = req.body;
+
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Find the trainer by email
+    const trainer = await Trainer.findOne({ email });
+
+    // If trainer not found, return error
+    if (!trainer) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Compare passwords
+    const passwordMatch = await bcrypt.compare(password, trainer.password);
+
+    // If passwords don't match, return error
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { email: trainer.email, role: trainer.roles },
+      secretKey,
+      { expiresIn: "2w" } 
+    );
+
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // admin login
 
 // Admin login route
