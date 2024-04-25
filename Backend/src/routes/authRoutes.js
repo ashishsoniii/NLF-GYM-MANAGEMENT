@@ -10,28 +10,14 @@ const router = express.Router();
 const secretKey = "admin@123"; // Enter a secure secret key
 
 // Trainer Registration
-router.post("/trainerRegistration", async (req, res) => {
+router.post("/trainerRegistration", adminAuthMiddleware, async (req, res) => {
   try {
-    // Check if the user making the request is an admin
-    if (!req.user || !req.user.roles.includes("admin")) {
-      return res
-        .status(403)
-        .json({ error: "Only admins can register trainers" });
-    }
-
     // Extract required fields from request body
-    const {
-      name,
-      email,
-      phone,
-      specialization,
-      commissionRate,
-      initialEmail,
-      initialPassword,
-    } = req.body;
+    const { name, email, phone, specialization, commissionRate, password } =
+      req.body;
 
     // Check if all required fields are provided
-    if (!name || !email || !phone || !initialEmail || !initialPassword) {
+    if (!name || !email || !phone || !password) {
       return res
         .status(400)
         .json({ error: "All details must be provided for registration" });
@@ -44,7 +30,7 @@ router.post("/trainerRegistration", async (req, res) => {
     }
 
     // Hash the initial password
-    const hashedPassword = await bcrypt.hash(initialPassword, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new Trainer document
     const newTrainer = new Trainer({
@@ -53,8 +39,7 @@ router.post("/trainerRegistration", async (req, res) => {
       phone,
       specialization,
       commissionRate,
-      initialEmail,
-      initialPassword: hashedPassword, // Store hashed password
+      password: hashedPassword, // Store hashed password
       roles: ["trainer"], // By default, new trainers are assigned the role "trainer"
     });
 
@@ -65,7 +50,7 @@ router.post("/trainerRegistration", async (req, res) => {
     const token = jwt.sign(
       { email: newTrainer.email, role: newTrainer.roles },
       secretKey,
-      { expiresIn: "1h" }
+      { expiresIn: "2w" }
     );
 
     res.status(201).json({ message: "Trainer registered successfully", token });
@@ -188,16 +173,14 @@ router.post("/login", async (req, res) => {
 router.get("/protectedRoute", adminAuthMiddleware, (req, res) => {
   // Access admin object attached by the middleware
   const admin = req.admin;
-  res
-    .status(200)
-    .json({
-      message: `Welcome, ${admin.name}! You have access to this protected route.`,
-    });
+  res.status(200).json({
+    message: `Welcome, ${admin.name}! You have access to this protected route.`,
+  });
 });
 
 // /forgot-password - This route is used to initiate the password reset process. It sends an OTP to the user's college email address. If the user exists in the database, it generates a new OTP, sends it via email, and updates the user's OTP field.
 
-// Step 3: Forgot Password - Send OTP to College Email
+// Step 3: Forgot Password
 router.post("/forgot-password", async (req, res) => {
   try {
   } catch (error) {
