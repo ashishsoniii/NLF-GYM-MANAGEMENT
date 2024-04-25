@@ -3,9 +3,8 @@ const mongoose = require("mongoose");
 const planSchema = new mongoose.Schema({
   name: { type: String, required: true },
   duration: {
-    type: String,
+    type: Number,
     required: true,
-    enum: ["Monthly", "Quarterly", "Yearly"],
   },
   price: { type: Number, required: true },
   description: String,
