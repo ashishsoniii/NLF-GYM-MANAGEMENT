@@ -3,7 +3,9 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
@@ -11,6 +13,9 @@ import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -30,6 +35,7 @@ export default function UserTableRow({
   handleClick,
 }) {
   const [open, setOpen] = useState(null);
+  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -39,6 +45,7 @@ export default function UserTableRow({
     setOpen(null);
   };
   const handleDelete = async () => {
+    setConfirmationOpen(false); // Close the confirmation dialog
     try {
       const token = localStorage.getItem('token');
 
@@ -112,11 +119,32 @@ export default function UserTableRow({
           Edit
         </MenuItem>
 
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={() => setConfirmationOpen(true)} sx={{ color: 'error.main' }}>
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
       </Popover>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={isConfirmationOpen}
+        onClose={() => setConfirmationOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">Are you sure you want to delete {name}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmationOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
