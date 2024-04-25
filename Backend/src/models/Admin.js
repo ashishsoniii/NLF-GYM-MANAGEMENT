@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
-const trainerSchema = new mongoose.Schema({
+const adminSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
   specialization: String,
-  roles: { type: [String], default: ["trainer"], enum: ["admin", "trainer"] },
+  roles: { type: [String], default: ["Admin"] },
   commissionRate: Number,
   isActive: { type: Boolean, default: true },
   payments: [
@@ -20,4 +20,4 @@ const trainerSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-module.exports = mongoose.model("Trainer", trainerSchema);
+module.exports = mongoose.model("Admin", adminSchema);
