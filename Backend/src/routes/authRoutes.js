@@ -109,8 +109,6 @@ router.post("/adminRegistration", async (req, res) => {
   }
 });
 
-
-
 // Trainer Login
 
 // Trainer login route
@@ -144,7 +142,7 @@ router.post("/trainerLogin", async (req, res) => {
     const token = jwt.sign(
       { email: trainer.email, role: trainer.roles },
       secretKey,
-      { expiresIn: "2w" } 
+      { expiresIn: "2w" }
     );
 
     res.status(200).json({ message: "Login successful", token });
@@ -152,7 +150,6 @@ router.post("/trainerLogin", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // admin login
 
