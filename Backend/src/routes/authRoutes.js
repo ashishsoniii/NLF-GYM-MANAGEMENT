@@ -181,13 +181,17 @@ router.post("/adminLogin", async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { email: admin.email, role: admin.roles },
-      secretKey,
-      { expiresIn: "2d" }
-    );
+    const tokenPayload = {
+      email: admin.email,
+      name: admin.name,
+      phone: admin.phone,
+      role: admin.roles,
+    };
+    const token = jwt.sign(tokenPayload, secretKey, { expiresIn: "2d" });
 
-    res.status(200).json({ message: "Login successful", token });
+    res
+      .status(200)
+      .json({ message: "Login successful", token, ...tokenPayload });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -42,8 +42,12 @@ export default function LoginView() {
       });
 
       // If login is successful, store JWT token in local storage
+      // console.log(response.data);
       if (response.status === 200) {
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('email', response.data.email);
+        localStorage.setItem('name', response.data.name);
+        localStorage.setItem('phone', response.data.phone);
         // Redirect to desired route after successful login
         router.push('../');
       } else {

@@ -36,6 +36,11 @@ export default function AccountPopover() {
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
+  const handleLogout = (event) => {
+    localStorage.removeItem('token');
+    window.location.reload();
+    setOpen(null);
+  };
 
   const handleClose = () => {
     setOpen(null);
@@ -105,7 +110,7 @@ export default function AccountPopover() {
         <MenuItem
           disableRipple
           disableTouchRipple
-          onClick={handleClose}
+          onClick={handleLogout}
           sx={{ typography: 'body2', color: 'error.main', py: 1.5 }}
         >
           Logout
