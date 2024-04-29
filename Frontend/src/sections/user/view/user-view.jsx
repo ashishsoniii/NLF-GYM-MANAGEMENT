@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -15,17 +16,21 @@ import { users } from 'src/_mock/user';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
+import NewUserForm from './new-user-form';
 import TableNoData from '../table-no-data';
 import UserTableRow from '../user-table-row';
 import UserTableHead from '../user-table-head';
 import TableEmptyRows from '../table-empty-rows';
 import UserTableToolbar from '../user-table-toolbar';
+import AppWidgetSummary from '../app-widget-summary';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
 // ----------------------------------------------------------------------
 
 export default function UserPage() {
   const [page, setPage] = useState(0);
+
+  const [clickedTitle, setClickedTitle] = useState('All Members');
 
   const [order, setOrder] = useState('asc');
 
@@ -43,6 +48,10 @@ export default function UserPage() {
       setOrder(isAsc ? 'desc' : 'asc');
       setOrderBy(id);
     }
+  };
+
+  const handleCardClick = (title) => {
+    setClickedTitle(title);
   };
 
   const handleSelectAllClick = (event) => {
@@ -104,69 +113,106 @@ export default function UserPage() {
         </Button>
       </Stack>
 
+      <Grid container spacing={3} m={5} gap={4}>
+        <Grid xs={12} sm={6} md={3}>
+          <AppWidgetSummary
+            total="All Members"
+            color="success"
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                cursor: 'pointer', // Change cursor to pointer on hover
+              },
+            }}
+            onClick={() => handleCardClick('All Members')}
+            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} md={3}>
+          <AppWidgetSummary
+            total="New Member"
+            color="info"
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                cursor: 'pointer', // Change cursor to pointer on hover
+              },
+            }}
+            onClick={() => handleCardClick('New Member')}
+            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
+          />
+        </Grid>
+      </Grid>
+
       <Card>
-        <UserTableToolbar
-          numSelected={selected.length}
-          filterName={filterName}
-          onFilterName={handleFilterByName}
-        />
+        {clickedTitle === 'All Members' && (
+          <>
+            <UserTableToolbar
+              numSelected={selected.length}
+              filterName={filterName}
+              onFilterName={handleFilterByName}
+            />
 
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <UserTableHead
-                order={order}
-                orderBy={orderBy}
-                rowCount={users.length}
-                numSelected={selected.length}
-                onRequestSort={handleSort}
-                onSelectAllClick={handleSelectAllClick}
-                headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  { id: '' },
-                ]}
-              />
-              <TableBody>
-                {dataFiltered
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => (
-                    <UserTableRow
-                      key={row.id}
-                      name={row.name}
-                      role={row.role}
-                      status={row.status}
-                      company={row.company}
-                      avatarUrl={row.avatarUrl}
-                      isVerified={row.isVerified}
-                      selected={selected.indexOf(row.name) !== -1}
-                      handleClick={(event) => handleClick(event, row.name)}
+            <Scrollbar>
+              <TableContainer sx={{ overflow: 'unset' }}>
+                <Table sx={{ minWidth: 800 }}>
+                  <UserTableHead
+                    order={order}
+                    orderBy={orderBy}
+                    rowCount={users.length}
+                    numSelected={selected.length}
+                    onRequestSort={handleSort}
+                    onSelectAllClick={handleSelectAllClick}
+                    headLabel={[
+                      { id: 'name', label: 'Name' },
+                      { id: 'company', label: 'Company' },
+                      { id: 'role', label: 'Role' },
+                      { id: 'isVerified', label: 'Verified', align: 'center' },
+                      { id: 'status', label: 'Status' },
+                      { id: '' },
+                    ]}
+                  />
+                  <TableBody>
+                    {dataFiltered
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row) => (
+                        <UserTableRow
+                          key={row.id}
+                          name={row.name}
+                          role={row.role}
+                          status={row.status}
+                          company={row.company}
+                          avatarUrl={row.avatarUrl}
+                          isVerified={row.isVerified}
+                          selected={selected.indexOf(row.name) !== -1}
+                          handleClick={(event) => handleClick(event, row.name)}
+                        />
+                      ))}
+
+                    <TableEmptyRows
+                      height={77}
+                      emptyRows={emptyRows(page, rowsPerPage, users.length)}
                     />
-                  ))}
 
-                <TableEmptyRows
-                  height={77}
-                  emptyRows={emptyRows(page, rowsPerPage, users.length)}
-                />
+                    {notFound && <TableNoData query={filterName} />}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Scrollbar>
 
-                {notFound && <TableNoData query={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
+            <TablePagination
+              page={page}
+              component="div"
+              count={users.length}
+              rowsPerPage={rowsPerPage}
+              onPageChange={handleChangePage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </>
+        )}
 
-        <TablePagination
-          page={page}
-          component="div"
-          count={users.length}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {clickedTitle === 'New Member' && <NewUserForm />}
       </Card>
     </Container>
   );

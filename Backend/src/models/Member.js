@@ -2,9 +2,14 @@ const mongoose = require("mongoose");
 
 const memberSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
   phone: { type: String, required: true },
   address: String,
+  dateOfBirth: Date,
+  gender: {
+    type: String,
+    enum: ["Male", "Female", "Other"],
+  },
   membershipPlan: { type: mongoose.Schema.Types.ObjectId, ref: "Plan" }, // Current plan (if any)
   joiningDate: { type: Date, default: Date.now },
   expiryDate: { type: Date }, // Calculated in the backend
