@@ -21,8 +21,8 @@ export default function NewUserForm({ setClickedTitle }) {
     expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
     latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
     payments: [],
-    assignedTrainer: '',
-    workoutType: '',
+    assignedTrainer: '6629ead5ebdf400ddbea7688', // default is no one and is self!
+    workoutType: 'Fitness',
     isActive: true,
     notes: '',
   });
@@ -82,14 +82,53 @@ export default function NewUserForm({ setClickedTitle }) {
 
     if (currentSelectedPlan) {
       setSelectedPlan(currentSelectedPlan);
+      console.log(currentSelectedPlan);
 
       // Ensure joiningDate is in the correct format (YYYY-MM-DD)
       const formattedJoiningDate = userData.joiningDate.split('T')[0];
 
+      // payments: [
+      //   {
+      //     amount: { type: Number, required: true },
+      //     date: { type: Date, default: Date.now },
+      //     paymentMethod: {
+      //       type: String,
+      //       enum: ["Cash", "Card", "Online"],
+      //       required: true,
+      //     },
+      //     plan: {
+      //       planId: { type: mongoose.Schema.Types.ObjectId, ref: "Plan" },
+      //       name: String,
+      //       duration: String,
+      //       price: Number,
+      //     },
+      //   },
+      // ],
+
+      const payments = [
+        {
+          amount: currentSelectedPlan.price,
+          date: new Date(),
+          paymentMethod: 'Cash',
+          plan: {
+            planId: currentSelectedPlan._id, // Example ObjectId as a string
+            name: currentSelectedPlan.name,
+            duration: currentSelectedPlan.duration,
+            price: currentSelectedPlan.price,
+          },
+        },
+      ];
+
+      console.log('Initial payments:', payments);
+
       setUserData({
         ...userData,
         membershipPlan: value,
-        expiryDate: calculateExpiryDate(new Date(formattedJoiningDate), selectedPlan.duration),
+        expiryDate: calculateExpiryDate(
+          new Date(formattedJoiningDate),
+          currentSelectedPlan.duration
+        ),
+        payments,
       });
     } else {
       console.error('Selected plan not found');
@@ -100,11 +139,15 @@ export default function NewUserForm({ setClickedTitle }) {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log(userData);
+      console.log(userData);
       const response = await axios.post('http://localhost:3001/member/add', userData, {
         headers: {
           Authorization: token,
         },
       });
+      console.log(userData);
+      console.log(userData);
       console.log('User added successfully:', response.data);
       setUserData({
         name: '',
@@ -112,14 +155,14 @@ export default function NewUserForm({ setClickedTitle }) {
         phone: '',
         address: '',
         membershipPlan: '',
-        dateOfBirth: '',
+        dateOfBirth: new Date().toISOString().slice(0, 10).split('T')[0], // Date format: dd-mm-yyyy
         gender: '',
-        joiningDate: new Date().toISOString().slice(0, 10),
-        expiryDate: '',
-        latestPaymentDate: new Date().toISOString().slice(0, 10),
+        joiningDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
+        expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
+        latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
         payments: [],
-        assignedTrainer: '',
-        workoutType: '',
+        assignedTrainer: '6629ead5ebdf400ddbea7688',
+        workoutType: 'Fitness',
         isActive: true,
         notes: '',
       });

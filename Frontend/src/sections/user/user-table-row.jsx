@@ -23,7 +23,7 @@ export default function UserTableRow({
   company,
   role,
   isVerified,
-  status,
+  status,     
   handleClick,
 }) {
   const [open, setOpen] = useState(null);
