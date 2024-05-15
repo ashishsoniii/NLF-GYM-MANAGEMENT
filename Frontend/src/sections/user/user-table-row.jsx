@@ -23,7 +23,14 @@ export default function UserTableRow({
   company,
   role,
   isVerified,
-  status,     
+
+  joiningDate,
+  expiryDate,
+  planName,
+  email,
+  phone,
+  gender,
+  status,
   handleClick,
 }) {
   const [open, setOpen] = useState(null);
@@ -52,14 +59,21 @@ export default function UserTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell>{company}</TableCell>
+        <TableCell>{joiningDate}</TableCell>
+        <TableCell>{expiryDate}</TableCell>
+        <TableCell>{planName}</TableCell>
+        <TableCell>{email}</TableCell>
+        <TableCell>{phone}</TableCell>
 
+        <TableCell>{gender}</TableCell>
         <TableCell>{role}</TableCell>
 
         <TableCell align="center">{isVerified ? 'Yes' : 'No'}</TableCell>
 
         <TableCell>
-          <Label color={(status === 'banned' && 'error') || 'success'}>{status}</Label>
+          <Label color={(isVerified === 'banned' && 'error') || 'success'}>
+            {isVerified ? 'Yes' : 'No'}
+          </Label>
         </TableCell>
 
         <TableCell align="right">
@@ -102,4 +116,10 @@ UserTableRow.propTypes = {
   role: PropTypes.any,
   selected: PropTypes.any,
   status: PropTypes.string,
+  joiningDate: PropTypes.any,
+  expiryDate: PropTypes.any,
+  planName: PropTypes.any,
+  email: PropTypes.any,
+  phone: PropTypes.any,
+  gender: PropTypes.any,
 };

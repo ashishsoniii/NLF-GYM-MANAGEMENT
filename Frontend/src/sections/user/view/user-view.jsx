@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -11,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import { users } from 'src/_mock/user';
+// import { users } from 'src/_mock/user';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -30,7 +31,9 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 export default function UserPage() {
   const [page, setPage] = useState(0);
 
-  const [clickedTitle, setClickedTitle] = useState('All Members');
+  const [clickedTitle, setClickedTitle] = useState('All users');
+
+  const [users, setusers] = useState([]);
 
   const [order, setOrder] = useState('asc');
 
@@ -62,6 +65,28 @@ export default function UserPage() {
     }
     setSelected([]);
   };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // const response = await axios.get('http://localhost:3001/member/all'); // Replace with your API endpoint
+      const response = await axios.get('http://localhost:3001/member/all', {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      setusers(response.data.members);
+      console.log(response.data);
+      console.log('users Here:', response.data);
+    } catch (error) {
+      console.error('Error fetcaing plans:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(); // Fetch plans when the component mounts
+  }, [clickedTitle]); // Empty dependency array ensures this effect runs only once
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -106,7 +131,7 @@ export default function UserPage() {
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Members</Typography>
+        <Typography variant="h4">users</Typography>
 
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
@@ -116,7 +141,7 @@ export default function UserPage() {
       <Grid container spacing={3} m={5} gap={4}>
         <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
-            total="All Members"
+            total="All users"
             color="success"
             sx={{
               cursor: 'pointer',
@@ -124,7 +149,7 @@ export default function UserPage() {
                 cursor: 'pointer', // Change cursor to pointer on hover
               },
             }}
-            onClick={() => handleCardClick('All Members')}
+            onClick={() => handleCardClick('All users')}
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
         </Grid>
@@ -145,7 +170,7 @@ export default function UserPage() {
       </Grid>
 
       <Card>
-        {clickedTitle === 'All Members' && (
+        {clickedTitle === 'All users' && (
           <>
             <UserTableToolbar
               numSelected={selected.length}
@@ -181,13 +206,19 @@ export default function UserPage() {
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((row) => (
                         <UserTableRow
-                          key={row.id}
+                          key={row._id}
                           name={row.name}
                           role={row.role}
+                          joiningDate={row.joiningDate}
+                          expiryDate={row.expiryDate}
+                          planName={row.plan}
+                          email={row.email}
+                          phone={row.phone}
+                          gender={row.gender}
                           status={row.status}
                           company={row.company}
                           avatarUrl={row.avatarUrl}
-                          isVerified={row.isVerified}
+                          isVerified={row.isActive}
                           selected={selected.indexOf(row.name) !== -1}
                           handleClick={(event) => handleClick(event, row.name)}
                         />
