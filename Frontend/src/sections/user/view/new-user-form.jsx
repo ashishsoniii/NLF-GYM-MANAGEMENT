@@ -39,7 +39,7 @@ export default function NewUserForm({ setClickedTitle }) {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/plan');
+      const response = await axios.get('http://localhost:3001/plan/active');
       setPlans(response.data);
     } catch (errors) {
       console.error('Error fetching plans:', errors);
@@ -163,6 +163,7 @@ export default function NewUserForm({ setClickedTitle }) {
         membershipPlan: '',
         dateOfBirth: new Date().toISOString().slice(0, 10).split('T')[0], // Date format: dd-mm-yyyy
         gender: '',
+        latestPlanName: '',
         joiningDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
         expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
         latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
@@ -172,6 +173,7 @@ export default function NewUserForm({ setClickedTitle }) {
         isActive: true,
         notes: '',
       });
+      setSelectedPlan(null);
       setError('User Added Successfully');
       setClickedTitle('All Users');
     } catch (errors) {

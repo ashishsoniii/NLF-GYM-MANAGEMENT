@@ -37,6 +37,15 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Get currently ACTIVE plans
+router.get("/active", async (req, res) => {
+  try {
+    const plans = await Plan.find({ isActive: true });
+    res.json(plans);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get a specific plan by ID
 router.get("/:id", async (req, res) => {
