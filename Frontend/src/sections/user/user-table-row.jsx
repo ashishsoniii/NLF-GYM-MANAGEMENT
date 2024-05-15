@@ -59,20 +59,20 @@ export default function UserTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell>{joiningDate}</TableCell>
-        <TableCell>{expiryDate}</TableCell>
+        <TableCell>{new Date(joiningDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
+        <TableCell>{new Date(expiryDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
         <TableCell>{planName}</TableCell>
         <TableCell>{email}</TableCell>
         <TableCell>{phone}</TableCell>
 
         <TableCell>{gender}</TableCell>
-        <TableCell>{role}</TableCell>
+        {/* <TableCell>{role}</TableCell> */}
 
-        <TableCell align="center">{isVerified ? 'Yes' : 'No'}</TableCell>
+        {/* <TableCell align="center">{isVerified ? 'Yes' : 'No'}</TableCell> */}
 
         <TableCell>
           <Label color={(isVerified === 'banned' && 'error') || 'success'}>
-            {isVerified ? 'Yes' : 'No'}
+            {isVerified ? 'Active' : 'Disable'}
           </Label>
         </TableCell>
 

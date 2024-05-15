@@ -211,7 +211,7 @@ export default function UserPage() {
                           role={row.role}
                           joiningDate={row.joiningDate}
                           expiryDate={row.expiryDate}
-                          planName={row.plan}
+                          planName={row.latestPlanName}
                           email={row.email}
                           phone={row.phone}
                           gender={row.gender}

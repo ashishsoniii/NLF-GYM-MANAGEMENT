@@ -11,13 +11,16 @@ const memberSchema = new mongoose.Schema({
     enum: ["Male", "Female", "Other"],
   },
   membershipPlan: { type: mongoose.Schema.Types.ObjectId, ref: "Plan" }, // Current plan (if any)
-  joiningDate: { type: Date, default: Date.now },
-  expiryDate: { type: Date }, // Calculated in the backend
-  latestPaymentDate: { type: Date, default: Date.now },
+  joiningDate: { type: Date, default: Date.now, required: true },
+  expiryDate: { type: Date, required: true }, // Calculated in the backend
+  latestPaymentDate: { type: Date, default: Date.now, required: true },
+  latestPlanName: { type: String, required: true, required: true },
   payments: [
     {
       amount: { type: Number, required: true },
       date: { type: Date, default: Date.now },
+      joiningDate: { type: Date, default: Date.now, required: true },
+      expiryDate: { type: Date, required: true }, // Calculated in the backend
       paymentMethod: {
         type: String,
         enum: ["Cash", "Card", "Online"],

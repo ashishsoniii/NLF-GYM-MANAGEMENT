@@ -17,6 +17,7 @@ export default function NewUserForm({ setClickedTitle }) {
     membershipPlan: '',
     dateOfBirth: new Date().toISOString().slice(0, 10).split('T')[0], // Date format: dd-mm-yyyy
     gender: '',
+    latestPlanName: '',
     joiningDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
     expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
     latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
@@ -105,11 +106,18 @@ export default function NewUserForm({ setClickedTitle }) {
       //   },
       // ],
 
+      const expiryDateUpdate = calculateExpiryDate(
+        new Date(formattedJoiningDate),
+        currentSelectedPlan.duration
+      );
+
       const payments = [
         {
           amount: currentSelectedPlan.price,
           date: new Date(),
           paymentMethod: 'Cash',
+          joiningDate: userData.joiningDate,
+          expiryDate: expiryDateUpdate,
           plan: {
             planId: currentSelectedPlan._id, // Example ObjectId as a string
             name: currentSelectedPlan.name,
@@ -124,10 +132,8 @@ export default function NewUserForm({ setClickedTitle }) {
       setUserData({
         ...userData,
         membershipPlan: value,
-        expiryDate: calculateExpiryDate(
-          new Date(formattedJoiningDate),
-          currentSelectedPlan.duration
-        ),
+        expiryDate: expiryDateUpdate,
+        latestPlanName: currentSelectedPlan.name,
         payments,
       });
     } else {
