@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+// import { Link } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
-// import Checkbox from '@mui/material/Checkbox';
+import Checkbox from '@mui/material/Checkbox';
 import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
@@ -13,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
+// import AccountPage from 'src/pages/account';
 
 // ----------------------------------------------------------------------
 
@@ -21,9 +23,9 @@ export default function UserTableRow({
   name,
   avatarUrl,
   company,
+  setcurentUser,
   role,
   isVerified,
-
   joiningDate,
   expiryDate,
   planName,
@@ -32,11 +34,17 @@ export default function UserTableRow({
   gender,
   status,
   handleClick,
+  currentDataRow,
 }) {
   const [open, setOpen] = useState(null);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
+  };
+
+  const handleDetailMenu = (event) => {
+    setOpen(event.currentTarget);
+    setcurentUser(currentDataRow);
   };
 
   const handleCloseMenu = () => {
@@ -47,7 +55,7 @@ export default function UserTableRow({
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         <TableCell padding="checkbox">
-          {/* <Checkbox disableRipple checked={selected} onChange={handleClick} /> */}
+          <Checkbox disableRipple checked={selected} onChange={handleClick} />
         </TableCell>
 
         <TableCell component="th" scope="row" padding="none">
@@ -98,6 +106,13 @@ export default function UserTableRow({
           Edit
         </MenuItem>
 
+        {/* <Link to={{ pathname: '/account', state: "dataToPass" }}> */}
+        <MenuItem onClick={handleDetailMenu}>
+          <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
+          Detail
+        </MenuItem>
+        {/* </Link> */}
+
         <MenuItem onClick={handleCloseMenu} sx={{ color: 'error.main' }}>
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
           Delete
@@ -122,4 +137,6 @@ UserTableRow.propTypes = {
   email: PropTypes.any,
   phone: PropTypes.any,
   gender: PropTypes.any,
+  setcurentUser: PropTypes.any,
+  currentDataRow: PropTypes.any,
 };

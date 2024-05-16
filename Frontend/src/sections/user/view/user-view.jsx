@@ -13,6 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
 // import { users } from 'src/_mock/user';
+import AccountPage from 'src/pages/account';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -34,6 +35,8 @@ export default function UserPage() {
   const [clickedTitle, setClickedTitle] = useState('All users');
 
   const [users, setusers] = useState([]);
+
+  const [curentUser, setcurentUser] = useState(null);
 
   const [order, setOrder] = useState('asc');
 
@@ -169,9 +172,9 @@ export default function UserPage() {
         </Grid>
       </Grid>
 
-      <Card>
-        {clickedTitle === 'All users' && (
-          <>
+      {clickedTitle === 'All users' && (
+        <>
+          <Card>
             <UserTableToolbar
               numSelected={selected.length}
               filterName={filterName}
@@ -215,12 +218,14 @@ export default function UserPage() {
                           email={row.email}
                           phone={row.phone}
                           gender={row.gender}
+                          currentDataRow={row}
                           status={row.status}
                           company={row.company}
+                          setcurentUser={setcurentUser}
                           avatarUrl={row.avatarUrl}
                           isVerified={row.isActive}
-                          selected={selected.indexOf(row.name) !== -1}
-                          handleClick={(event) => handleClick(event, row.name)}
+                          selected={selected.indexOf(row._id) !== -1}
+                          handleClick={(event) => handleClick(event, row._id)}
                         />
                       ))}
 
@@ -244,11 +249,19 @@ export default function UserPage() {
               rowsPerPageOptions={[5, 10, 25]}
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
-          </>
-        )}
+          </Card>
 
-        {clickedTitle === 'New Member' && <NewUserForm />}
-      </Card>
+          {curentUser && 
+            <Grid xs={12} my={4} sm={6} md={3}>
+              <Card>
+                <AccountPage curentUser={curentUser} />
+              </Card>
+            </Grid>
+          }
+        </>
+      )}
+
+      <Card>{clickedTitle === 'New Member' && <NewUserForm />}</Card>
     </Container>
   );
 }
