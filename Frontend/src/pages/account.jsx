@@ -26,14 +26,12 @@ const AccountPage = ({ curentUser }) => (
             <Typography variant="h4">Account</Typography>
           </div>
           <div>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} >
               <Grid xs={12} md={6} lg={4}>
                 <AccountProfile curentUser={curentUser} />
               </Grid>
-              <Grid xs={12} md={6} lg={8}>
-                <AccountProfileDetails curentUser={curentUser} />
-              </Grid>
             </Grid>
+            <AccountProfileDetails curentUser={curentUser} />
           </div>
         </Stack>
       </Container>

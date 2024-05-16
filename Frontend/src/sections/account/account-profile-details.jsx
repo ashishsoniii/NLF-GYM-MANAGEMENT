@@ -149,9 +149,9 @@ export const AccountProfileDetails = ({ curentUser }) => {
           </Box>
         </CardContent>
 
-        <PlanPage payments={values.payments} />
 
         <Divider />
+        <PlanPage payments={values.payments} />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           {/* <Button variant="contained">Save details</Button> */}
         </CardActions>

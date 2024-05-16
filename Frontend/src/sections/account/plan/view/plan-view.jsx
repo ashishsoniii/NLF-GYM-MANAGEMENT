@@ -106,7 +106,7 @@ export default function PlanPage({payments}) {
   };
 
   const dataFiltered = applyFilter({
-    inputData: plans,
+    inputData: payments,
     comparator: getComparator(order, orderBy),
     filterName,
   });
@@ -136,8 +136,9 @@ export default function PlanPage({payments}) {
                     onRequestSort={handleSort}
                     onSelectAllClick={handleSelectAllClick}
                     headLabel={[
-                      { id: '_id', label: 'Plan Id' },
                       { id: 'name', label: 'Plan Name' },
+                      { id: 'startDate', label: 'Start Date' },
+                      { id: 'endDate', label: 'End Date' },
                       { id: 'duration', label: 'Plan Duration (in Months)' },
                       { id: 'description', label: 'Description' },
                       { id: 'price', label: 'Price', align: 'center' },
@@ -153,10 +154,13 @@ export default function PlanPage({payments}) {
                           fetchPlans={fetchPlans}
                           key={row._id}
                           id={row._id}
-                          name={row.name}
-                          duration={row.duration}
-                          description={row.description}
-                          price={row.price}
+                          name={row.plan.name}
+                          duration={row.plan.duration}
+                          description={row.plan.description}
+                          PaymentDate={row.date}
+                          startDate={row.joiningDate}
+                          expiryDate={row.expiryDate}
+                          price={row.plan.price}
                           status={row.isActive ? 'active' : 'inactive'}
                           avatarUrl={row.avatarUrl}
                           selected={selected.indexOf(row.name) !== -1}
