@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
 
 import {
   Box,
@@ -9,18 +10,29 @@ import {
   Typography,
   CardContent,
   CardActions,
-} from "@mui/material";
+} from '@mui/material';
 
-export const AccountProfile = () => {
+export const AccountProfile = ({ curentUser }) => {
   // We'll keep user data in state to update it once we can access the window object.
-  const [user, ] = useState({
-    avatar: "/assets/images/avatars/avatar_1.jpg", // Default avatar path
-    city: "Los Angeles",
-    country: "USA",
-    jobTitle: "Senior Developer",
-    name: "Name Here", // Placeholder for name until we fetch data
-    timezone: "GTM-7",
+  const [user, setUser] = useState({
+    avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+    city: curentUser.phone,
+    country: 'USA',
+    jobTitle: 'Senior Developer',
+    name: curentUser.name, // Placeholder for name until we fetch data
+    timezone: 'GMT-5:30',
   });
+
+  useEffect(() => {
+    setUser({
+      avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+      city: curentUser.phone,
+      country: 'USA',
+      jobTitle: 'Senior Developer',
+      name: curentUser.name, // Placeholder for name until we fetch data
+      timezone: 'GTM-7',
+    });
+  }, [curentUser]);
 
   // useEffect will run this code once the component is mounted in the client (where window is defined).
   // useEffect(() => {
@@ -35,7 +47,6 @@ export const AccountProfile = () => {
   //         email: userData.email, // assuming 'name' is a property of your stored user object
   //         lastLogin : userData.lastLogin ? new Date(userData.lastLogin).toLocaleDateString() : 'Never'
 
-
   //         // You can add any other properties from userData that you need.
   //       }));
   //     }
@@ -47,9 +58,9 @@ export const AccountProfile = () => {
       <CardContent>
         <Box
           sx={{
-            alignItems: "center",
-            display: "flex",
-            flexDirection: "column",
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <Avatar
@@ -79,4 +90,8 @@ export const AccountProfile = () => {
       </CardActions>
     </Card>
   );
+};
+
+AccountProfile.propTypes = {
+  curentUser: PropTypes.any,
 };

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -31,22 +31,28 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 
 export default function UserPage() {
   const [page, setPage] = useState(0);
-
   const [clickedTitle, setClickedTitle] = useState('All users');
-
   const [users, setusers] = useState([]);
-
   const [curentUser, setcurentUser] = useState(null);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState('name');
-
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Reference to the AccountPage container
+  const accountPageRef = useRef(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [clickedTitle]);
+
+  useEffect(() => {
+    // Scroll to the AccountPage component when curentUser is updated
+    if (curentUser && accountPageRef.current) {
+      accountPageRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [curentUser]);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -72,24 +78,18 @@ export default function UserPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      // const response = await axios.get('http://localhost:3001/member/all'); // Replace with your API endpoint
       const response = await axios.get('http://localhost:3001/member/all', {
         headers: {
           Authorization: token,
         },
       });
-
       setusers(response.data.members);
       console.log(response.data);
       console.log('users Here:', response.data);
     } catch (error) {
-      console.error('Error fetcaing plans:', error);
+      console.error('Error fetching plans:', error);
     }
   };
-
-  useEffect(() => {
-    fetchUsers(); // Fetch plans when the component mounts
-  }, [clickedTitle]); // Empty dependency array ensures this effect runs only once
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -134,8 +134,7 @@ export default function UserPage() {
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">users</Typography>
-
+        <Typography variant="h4">Users</Typography>
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
         </Button>
@@ -149,7 +148,7 @@ export default function UserPage() {
             sx={{
               cursor: 'pointer',
               '&:hover': {
-                cursor: 'pointer', // Change cursor to pointer on hover
+                cursor: 'pointer',
               },
             }}
             onClick={() => handleCardClick('All users')}
@@ -163,7 +162,7 @@ export default function UserPage() {
             sx={{
               cursor: 'pointer',
               '&:hover': {
-                cursor: 'pointer', // Change cursor to pointer on hover
+                cursor: 'pointer',
               },
             }}
             onClick={() => handleCardClick('New Member')}
@@ -199,7 +198,6 @@ export default function UserPage() {
                       { id: 'email', label: 'Email' },
                       { id: 'phone', label: 'Phone' },
                       { id: 'gender', label: 'Gender' },
-                      // { id: 'isVerified', label: 'Verified', align: 'center' },
                       { id: 'status', label: 'Status' },
                       { id: '' },
                     ]}
@@ -251,13 +249,15 @@ export default function UserPage() {
             />
           </Card>
 
-          {curentUser && 
-            <Grid xs={12} my={4} sm={6} md={3}>
-              <Card>
-                <AccountPage curentUser={curentUser} />
-              </Card>
-            </Grid>
-          }
+          {curentUser && (
+            <div ref={accountPageRef}>
+              <Grid xs={12} my={4} sm={6} md={3}>
+                <Card>
+                  <AccountPage curentUser={curentUser} />
+                </Card>
+              </Grid>
+            </div>
+          )}
         </>
       )}
 

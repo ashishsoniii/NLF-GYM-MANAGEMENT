@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import {
   Box,
@@ -17,7 +17,7 @@ import PlanPage from './plan/view/plan-view';
 // const user = window.sessionStorage.getItem("user");
 
 export const AccountProfileDetails = ({ curentUser }) => {
-  console.log(curentUser);
+  console.log('edr hi ');
   console.log(curentUser);
   console.log(curentUser);
   const [values, setValues] = useState({
@@ -33,6 +33,22 @@ export const AccountProfileDetails = ({ curentUser }) => {
     payments: curentUser.payments,
     workoutType: curentUser.workoutType,
   });
+
+  useEffect(() => {
+    setValues({
+      name: curentUser.name,
+      phone: curentUser.phone,
+      email: curentUser.email,
+      address: curentUser.address,
+      joiningDate: curentUser.joiningDate,
+      expiryDate: curentUser.expiryDate,
+      latestPlanName: curentUser.latestPlanName,
+      latestPaymentDate: curentUser.latestPaymentDate,
+      membershipPlan: curentUser.membershipPlan,
+      payments: curentUser.payments,
+      workoutType: curentUser.workoutType,
+    });
+  }, [curentUser]);
 
   const handleChange = useCallback((event) => {
     setValues((prevState) => ({
@@ -148,7 +164,6 @@ export const AccountProfileDetails = ({ curentUser }) => {
             </Grid>
           </Box>
         </CardContent>
-
 
         <Divider />
         <PlanPage payments={values.payments} />
