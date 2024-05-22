@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Member = require("../models/Member");
+const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 
 // Route to add a new member by an admin
@@ -149,6 +150,61 @@ router.put("/modify/:id", adminAuthMiddleware, async (req, res) => {
       return res.status(400).json({ error: errors.join(", ") });
     }
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/addPayment/:id", async (req, res) => {
+  const { id } = req.params;
+  const { amount, planId, expiryDate, joiningDate } = req.body;
+
+  try {
+    // Find the member by ID
+    const member = await Member.findById(id);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    // Find the plan by ID
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
+
+    // Calculate the expiry date based on the plan duration
+
+    // Create the new payment object
+    const newPayment = {
+      amount,
+      date: new Date(),
+      joiningDate,
+      expiryDate,
+      paymentMethod: "Cash",
+      plan: {
+        planId: plan._id,
+        name: plan.name,
+        duration: plan.duration,
+        price: plan.price,
+      },
+    };
+
+    // Add the new payment to the member's payments array
+    member.payments.push(newPayment);
+
+    // Update the member's latest payment date and expiry date
+    member.latestPaymentDate = joiningDate;
+    member.expiryDate = expiryDate;
+    member.membershipPlan = plan._id;
+    member.latestPlanName = plan.name;
+
+    // Save the updated member
+    await member.save();
+
+    res.status(200).json({ message: "Payment added successfully", member });
+  } catch (error) {
+    console.error("Error adding payment:", error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while adding payment", error });
   }
 });
 

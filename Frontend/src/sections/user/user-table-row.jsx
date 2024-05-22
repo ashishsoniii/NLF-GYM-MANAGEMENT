@@ -20,6 +20,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
+import UserEditDialog from './user-edit-dialog';
+
 // ----------------------------------------------------------------------
 
 export default function UserTableRow({
@@ -45,6 +47,7 @@ export default function UserTableRow({
   const [open, setOpen] = useState(null);
   const [isConfirmationDeleteOpen, setConfirmationOpen] = useState(false);
   const [isConfirmationActivateOpen, setConfirmationActivateOpen] = useState(false);
+  const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -156,7 +159,7 @@ export default function UserTableRow({
         {/* <TableCell align="center">{isVerified ? 'Yes' : 'No'}</TableCell> */}
 
         <TableCell>
-          <Label color={(!isVerified  && 'error') || 'success'}>
+          <Label color={(!isVerified && 'error') || 'success'}>
             {isVerified ? 'Active' : 'Disable'}
           </Label>
         </TableCell>
@@ -178,7 +181,10 @@ export default function UserTableRow({
           sx: { width: 140 },
         }}
       >
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem onClick={() => {
+          setOpen(null);
+          setConfirmationEditOpen(true);
+        }}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
         </MenuItem>
@@ -235,6 +241,20 @@ export default function UserTableRow({
           status === 'active' ? 'deactivate' : 'activate'
         } ${name}?`}
         onConfirm={status === 'active' ? handleDeactivate : handleActivate}
+      />
+
+      {/* Plan Dialog */}
+
+      <UserEditDialog
+        id={id}
+        isConfirmationEditOpen={isConfirmationEditOpen}
+        setConfirmationEditOpen={setConfirmationEditOpen}
+        name={name}
+        email={email}
+        phone={phone}
+        gender={gender}
+        role={role}
+        fetchUsers={fetchUsers}
       />
     </>
   );

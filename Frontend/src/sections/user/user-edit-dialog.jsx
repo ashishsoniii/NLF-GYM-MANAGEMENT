@@ -44,7 +44,7 @@ function UserEditDialog({
       const token = localStorage.getItem('token');
 
       // Send PUT request to edit the user
-      const response = await axios.put(`http://localhost:3001/user/edit/${id}`, userData, {
+      const response = await axios.put(`http://localhost:3001/member/modify/${id}`, userData, {
         headers: {
           Authorization: `${token}`,
         },
@@ -62,95 +62,90 @@ function UserEditDialog({
   };
 
   return (
-    <>
-    {/* dialog for edit */}
-      <Dialog
-        open={isConfirmationEditOpen}
-        onClose={() => setConfirmationEditOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Edit User</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} mt={3}>
-            <Grid item xs={12}>
-              <TextField
-                label="Name"
-                variant="outlined"
-                fullWidth
-                name="name"
-                value={userData.name}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Email"
-                variant="outlined"
-                fullWidth
-                name="email"
-                value={userData.email}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Phone"
-                variant="outlined"
-                fullWidth
-                name="phone"
-                value={userData.phone}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Gender"
-                variant="outlined"
-                fullWidth
-                name="gender"
-                value={userData.gender}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Role"
-                variant="outlined"
-                fullWidth
-                name="role"
-                value={userData.role}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              {errorshow && (
-                <Typography variant="body2" color="error">
-                  {errorshow}
-                </Typography>
-              )}
-            </Grid>
+    <Dialog
+      open={isConfirmationEditOpen}
+      onClose={() => setConfirmationEditOpen(false)}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">Edit User</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2} mt={3}>
+          <Grid item xs={12}>
+            <TextField
+              label="Name"
+              variant="outlined"
+              fullWidth
+              name="name"
+              value={userData.name}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
           </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmationEditOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleEdit} color="primary">
-            Edit
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+          <Grid item xs={12}>
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              name="email"
+              value={userData.email}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Phone"
+              variant="outlined"
+              fullWidth
+              name="phone"
+              value={userData.phone}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Gender"
+              variant="outlined"
+              fullWidth
+              name="gender"
+              value={userData.gender}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+          </Grid>
+          {/* <Grid item xs={12}>
+            <TextField
+              label="Role"
+              variant="outlined"
+              fullWidth
+              name="role"
+              value={userData.role}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+          </Grid> */}
+          <Grid item xs={12}>
+            {errorshow && (
+              <Typography variant="body2" color="error">
+                {errorshow}
+              </Typography>
+            )}
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setConfirmationEditOpen(false)} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={handleEdit} color="primary">
+          Edit
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
-
-export default UserEditDialog;
 
 UserEditDialog.propTypes = {
   setConfirmationEditOpen: PropTypes.func.isRequired,
@@ -163,3 +158,5 @@ UserEditDialog.propTypes = {
   id: PropTypes.string.isRequired,
   fetchUsers: PropTypes.func.isRequired,
 };
+
+export default UserEditDialog;
