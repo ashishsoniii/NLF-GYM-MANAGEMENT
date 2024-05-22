@@ -208,19 +208,21 @@ export default function UserPage() {
                       .map((row) => (
                         <UserTableRow
                           key={row._id}
+                          id={row._id}
                           name={row.name}
                           role={row.role}
                           joiningDate={row.joiningDate}
                           expiryDate={row.expiryDate}
                           planName={row.latestPlanName}
                           email={row.email}
+                          fetchUsers={fetchUsers}
                           phone={row.phone}
                           gender={row.gender}
                           currentDataRow={row}
-                          status={row.status}
                           company={row.company}
                           setcurentUser={setcurentUser}
                           avatarUrl={row.avatarUrl}
+                          status={row.isActive ? 'active' : 'deactivate'}
                           isVerified={row.isActive}
                           selected={selected.indexOf(row._id) !== -1}
                           handleClick={(event) => handleClick(event, row._id)}
