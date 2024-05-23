@@ -21,6 +21,7 @@ import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
 import UserEditDialog from './user-edit-dialog';
+import UserPaymentDialog from './user-payment-dialog';
 
 // ----------------------------------------------------------------------
 
@@ -48,6 +49,7 @@ export default function UserTableRow({
   const [isConfirmationDeleteOpen, setConfirmationOpen] = useState(false);
   const [isConfirmationActivateOpen, setConfirmationActivateOpen] = useState(false);
   const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
+  const [isConfirmationPaymentOpen, setConfirmationPaymentOpen] = useState(false);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -181,12 +183,23 @@ export default function UserTableRow({
           sx: { width: 140 },
         }}
       >
-        <MenuItem onClick={() => {
-          setOpen(null);
-          setConfirmationEditOpen(true);
-        }}>
+        <MenuItem
+          onClick={() => {
+            setOpen(null);
+            setConfirmationEditOpen(true);
+          }}
+        >
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setOpen(null);
+            setConfirmationPaymentOpen(true);
+          }}
+        >
+          <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
+          Payment
         </MenuItem>
 
         <MenuItem onClick={handleDetailMenu}>
@@ -255,6 +268,19 @@ export default function UserTableRow({
         gender={gender}
         role={role}
         fetchUsers={fetchUsers}
+      />
+
+      <UserPaymentDialog
+        id={id}
+        isConfirmationEditOpen={isConfirmationPaymentOpen}
+        setConfirmationEditOpen={setConfirmationPaymentOpen}
+        name={name}
+        email={email}
+        phone={phone}
+        gender={gender}
+        role={role}
+        fetchUsers={fetchUsers}
+        currentDataRow={currentDataRow}
       />
     </>
   );
