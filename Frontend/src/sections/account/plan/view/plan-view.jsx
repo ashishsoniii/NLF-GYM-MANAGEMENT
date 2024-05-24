@@ -140,9 +140,9 @@ export default function PlanPage({payments}) {
                       { id: 'startDate', label: 'Start Date' },
                       { id: 'endDate', label: 'End Date' },
                       { id: 'duration', label: 'Plan Duration (in Months)' },
-                      { id: 'description', label: 'Description' },
+                      { id: 'payDate', label: 'Payment Date' },
                       { id: 'price', label: 'Price', align: 'center' },
-                      { id: 'isActive', label: 'Status' },
+                      // { id: 'isActive', label: 'Status' },
                       { id: '' },
                     ]}
                   />

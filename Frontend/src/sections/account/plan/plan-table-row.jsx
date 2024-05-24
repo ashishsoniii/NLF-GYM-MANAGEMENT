@@ -17,7 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
-import Label from 'src/components/label';
+// import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
 import EditPlanDialog from './plan-edit-dialog';
@@ -51,10 +51,10 @@ export default function UserTableRow({
   const handleCloseMenu = () => {
     setOpen(null);
   };
-  const handleEditDialogMenu = () => {
-    setConfirmationEditOpen(true);
-    setOpen(null);
-  };
+  // const handleEditDialogMenu = () => {
+  //   setConfirmationEditOpen(true);
+  //   setOpen(null);
+  // };
   const handleDelete = async () => {
     setConfirmationOpen(false); // Close the confirmation dialog
     try {
@@ -142,9 +142,9 @@ export default function UserTableRow({
 
         <TableCell align="center">{price}</TableCell>
 
-        <TableCell>
+        {/* <TableCell>
           <Label color={status === 'active' ? 'success' : 'error'}>{status}</Label>
-        </TableCell>
+        </TableCell> */}
 
         <TableCell align="right">
           <IconButton onClick={handleOpenMenu}>
@@ -160,10 +160,10 @@ export default function UserTableRow({
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={handleEditDialogMenu}>
+        {/* <MenuItem onClick={handleEditDialogMenu}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem onClick={() => setConfirmationOpen(true)} sx={{ color: 'error.main' }}>
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
