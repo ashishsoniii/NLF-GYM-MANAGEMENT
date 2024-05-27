@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
 const planRoutes = require("./routes/planRoutes");
 const memberRoutes = require("./routes/memberRoutes");
+const statisticsRoutes = require("./routes/statisticsRoutes");
 
 var cors = require("cors");
 
@@ -21,6 +22,7 @@ app.use(cors());
 app.use("/auth", authRoutes);
 app.use("/plan", planRoutes);
 app.use("/member", memberRoutes);
+app.use("/stat", statisticsRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

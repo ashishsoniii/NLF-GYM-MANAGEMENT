@@ -14,6 +14,7 @@ const memberSchema = new mongoose.Schema({
   joiningDate: { type: Date, default: Date.now, required: true },
   expiryDate: { type: Date, required: true }, // Calculated in the backend
   latestPaymentDate: { type: Date, default: Date.now, required: true },
+  latestPaymentAmount: { type: String, required: true },
   latestPlanName: { type: String, required: true, required: true },
   payments: [
     {

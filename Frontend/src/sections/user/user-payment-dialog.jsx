@@ -88,6 +88,7 @@ function UserPaymentDialog({
       setUserData({
         ...userData,
         membershipPlan: value,
+        latestPaymentAmount: selectedPlan.price,
         expiryDate: expiryDateUpdate,
         latestPlanName: currentSelectedPlan.name,
       });
@@ -122,6 +123,7 @@ function UserPaymentDialog({
       const updatedUserData = {
         ...userData,
         latestPaymentDate: new Date(),
+        latestPaymentAmount: selectedPlan.price,
         latestPlanName: selectedPlan.name,
         payments: [...currentDataRow.payments, newPayment],
       };
