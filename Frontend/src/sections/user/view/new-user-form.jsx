@@ -24,7 +24,6 @@ export default function NewUserForm({ setClickedTitle }) {
     payments: [],
     assignedTrainer: '6629ead5ebdf400ddbea7688', // default is no one and is self!
     workoutType: 'Fitness',
-    latestPaymentAmount: 0,
     isActive: true,
     notes: '',
   });

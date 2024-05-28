@@ -25,11 +25,9 @@ function UserPaymentDialog({
     name: currentDataRow.name,
     planName: currentDataRow.latestPlanName,
     currentExpiryDate: currentDataRow.expiryDate,
-    joiningDate: new Date().toISOString().split('T')[0],
-    // role: initialRole,
+    joiningDate: new Date(currentDataRow.expiryDate).toISOString().split('T')[0],
     membershipPlan: "",
-    expiryDate: new Date(currentDataRow.expiryDate).toISOString().slice(0, 10).split('T')[0],
-
+    expiryDate: new Date(currentDataRow.expiryDate).toISOString().split('T')[0],
   });
 
   const [plans, setPlans] = useState([]);
@@ -37,7 +35,6 @@ function UserPaymentDialog({
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
-    // Fetch plans from backend when component mounts
     fetchPlans();
   }, []);
 
@@ -45,14 +42,13 @@ function UserPaymentDialog({
     try {
       const response = await axios.get('http://localhost:3001/plan/active');
       setPlans(response.data);
-    } catch (errors) {
-      console.error('Error fetching plans:', errors);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
       setError('Error fetching plans');
     }
   };
 
   const calculateExpiryDate = (joiningDate, durationInMonths) => {
-    // Create a copy of the joiningDate
     const calculatedExpiry = new Date(joiningDate);
     calculatedExpiry.setMonth(calculatedExpiry.getMonth() + durationInMonths);
     return calculatedExpiry.toISOString().split('T')[0];
@@ -64,12 +60,11 @@ function UserPaymentDialog({
     if (selectedPlan) {
       const durationInMonths = selectedPlan.duration;
 
-      setUserData({
-        ...userData,
-        [name]: value, // joiningDate
-        currentExpiryDate:value,
+      setUserData((prevState) => ({
+        ...prevState,
+        [name]: value,
         expiryDate: calculateExpiryDate(new Date(value), durationInMonths),
-      });
+      }));
     } else {
       console.error('No plan selected');
       setError('Please select a membership plan first');
@@ -82,16 +77,15 @@ function UserPaymentDialog({
 
     if (currentSelectedPlan) {
       setSelectedPlan(currentSelectedPlan);
-      const formattedJoiningDate = userData.currentExpiryDate.split('T')[0];
-      const expiryDateUpdate = calculateExpiryDate(new Date(formattedJoiningDate), currentSelectedPlan.duration);
+      const expiryDateUpdate = calculateExpiryDate(new Date(userData.joiningDate), currentSelectedPlan.duration);
 
-      setUserData({
-        ...userData,
+      setUserData((prevState) => ({
+        ...prevState,
         membershipPlan: value,
-        latestPaymentAmount: selectedPlan.price,
+        latestPaymentAmount: currentSelectedPlan.price,
         expiryDate: expiryDateUpdate,
-        latestPlanName: currentSelectedPlan.name,
-      });
+        planName: currentSelectedPlan.name,
+      }));
     } else {
       console.error('Selected plan not found');
       setError('Selected plan not found');
@@ -100,16 +94,24 @@ function UserPaymentDialog({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    setUserData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const handleAddPayment = async () => {
+    if (!selectedPlan) {
+      setError('Please select a plan');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const newPayment = {
         amount: selectedPlan.price,
         date: new Date(),
-        paymentMethod: 'Cash', // Modify this if needed to take user input
+        paymentMethod: 'Cash',
         joiningDate: userData.joiningDate,
         expiryDate: userData.expiryDate,
         plan: {
@@ -128,16 +130,14 @@ function UserPaymentDialog({
         payments: [...currentDataRow.payments, newPayment],
       };
 
-      // Send PUT request to add payment to the user
-      const response = await axios.put(`http://localhost:3001/member/modify/${id}`, updatedUserData, {
+      await axios.put(`http://localhost:3001/member/modify/${id}`, updatedUserData, {
         headers: {
           Authorization: `${token}`,
         },
       });
 
-      // Refresh users after successful edit
       fetchUsers();
-      console.log('Payment added successfully:', response.data);
+      console.log('Payment added successfully');
     } catch (error) {
       console.error('Error adding payment:', error);
       setError(error.message);
@@ -145,8 +145,6 @@ function UserPaymentDialog({
 
     setConfirmationEditOpen(false);
   };
-
-
 
   return (
     <Dialog
@@ -231,7 +229,7 @@ function UserPaymentDialog({
               fullWidth
               type="date"
               name="joiningDate"
-              value={userData.currentExpiryDate.split('T')[0]}
+              value={userData.joiningDate}
               onChange={handleDateChange}
               sx={{ mb: 2 }}
             />

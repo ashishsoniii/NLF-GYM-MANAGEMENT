@@ -76,7 +76,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="name"
                   onChange={handleChange}
                   required
-                  // disabled
+                  disabled
                   value={values.name}
                 />
               </Grid>
@@ -89,6 +89,8 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   onChange={handleChange}
                   // required
                   // disabled
+                  disabled
+
                   value={values.email}
                 />
               </Grid>
@@ -99,6 +101,8 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="phone"
                   onChange={handleChange}
                   value={values.phone}
+                  disabled
+
                 />
               </Grid>
               <Grid xs={12} md={6}>
