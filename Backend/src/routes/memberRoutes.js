@@ -210,4 +210,33 @@ router.post("/addPayment/:id", async (req, res) => {
   }
 });
 
+// expired user route
+
+router.get("/expiredUser", async (req, res) => {
+  try {
+    // Get the current date
+    const currentDate = new Date();
+
+    // Query for members whose expiryDate is less than or equal to the current date
+    const members = await Member.find({ expiryDate: { $lte: currentDate } });
+
+    // Send the expired members as the response
+    res.status(200).json({ members });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// // Route to fetch all members
+// router.get("/all", adminAuthMiddleware, async (req, res) => {
+//   try {
+//     const members = await Member.find();
+//     res.status(200).json({ members });
+//   } catch (error) {
+//     console.error("Error fetching members:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
 module.exports = router;

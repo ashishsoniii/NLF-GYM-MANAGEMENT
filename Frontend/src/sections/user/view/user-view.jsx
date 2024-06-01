@@ -31,7 +31,7 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 
 export default function UserPage() {
   const [page, setPage] = useState(0);
-  const [clickedTitle, setClickedTitle] = useState('All users');
+  const [clickedTitle, setClickedTitle] = useState('all');
   const [users, setusers] = useState([]);
   const [curentUser, setcurentUser] = useState(null);
   const [order, setOrder] = useState('asc');
@@ -78,7 +78,7 @@ export default function UserPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3001/member/all', {
+      const response = await axios.get(`http://localhost:3001/member/${clickedTitle}`, {
         headers: {
           Authorization: token,
         },
@@ -133,12 +133,13 @@ export default function UserPage() {
 
   return (
     <Container>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+      {/* btn code for all user - but not requres as card has been created! */}
+      {/* <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Users</Typography>
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
         </Button>
-      </Stack>
+      </Stack> */}
 
       <Grid container spacing={3} m={5} gap={4}>
         <Grid xs={12} sm={6} md={3}>
@@ -151,7 +152,21 @@ export default function UserPage() {
                 cursor: 'pointer',
               },
             }}
-            onClick={() => handleCardClick('All users')}
+            onClick={() => handleCardClick('all')}
+            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} md={3}>
+          <AppWidgetSummary
+            total="Expired User"
+            color="success"
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                cursor: 'pointer',
+              },
+            }}
+            onClick={() => handleCardClick('expiredUser')}
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
         </Grid>
@@ -171,7 +186,7 @@ export default function UserPage() {
         </Grid>
       </Grid>
 
-      {clickedTitle === 'All users' && (
+      {(clickedTitle === 'all' || clickedTitle === 'expiredUser') && (
         <>
           <Card>
             <UserTableToolbar

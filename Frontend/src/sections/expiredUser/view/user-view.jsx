@@ -78,12 +78,15 @@ export default function UserPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3001/member/all', {
+      const response = await axios.get('http://localhost:3001/member/expiredUser', {
         headers: {
           Authorization: token,
         },
       });
-      setusers(response.data.members);
+      if(response.data){
+
+        setusers(response.data);
+      }
       console.log(response.data);
       console.log('users Here:', response.data);
     } catch (error) {
