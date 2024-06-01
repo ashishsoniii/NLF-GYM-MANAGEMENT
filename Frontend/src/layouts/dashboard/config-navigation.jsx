@@ -22,6 +22,11 @@ const navConfig = [
     path: '/plan',
     icon: icon('ic_plan'),
   },
+  // {
+  //   title: 'Expired User',
+  //   path: '/expiredUser',
+  //   icon: icon('ic_blog'),
+  // },
   {
     title: 'product',
     path: '/products',
@@ -30,11 +35,6 @@ const navConfig = [
   {
     title: 'blog',
     path: '/blog',
-    icon: icon('ic_blog'),
-  },
-  {
-    title: 'Expired User',
-    path: '/expiredUser',
     icon: icon('ic_blog'),
   },
   // {
