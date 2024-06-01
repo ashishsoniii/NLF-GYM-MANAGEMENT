@@ -32,7 +32,7 @@ const sendEmailwithAttachment = async (to, subject, html, attachment) => {
       service: "gmail",
       auth: {
         user: "ashishsonii2002@gmail.com", // Replace with your Gmail email
-        pass: "joxjqyeiwwwwwwwyoutyzjd", // Replace with your Gmail app password
+        pass: "joxjqyeiyoutyzjd", // Replace with your Gmail app password
       },
     });
 
