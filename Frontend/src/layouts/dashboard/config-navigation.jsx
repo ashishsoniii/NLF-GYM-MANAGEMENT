@@ -32,6 +32,11 @@ const navConfig = [
     path: '/blog',
     icon: icon('ic_blog'),
   },
+  {
+    title: 'Expired User',
+    path: '/expiredUser',
+    icon: icon('ic_blog'),
+  },
   // {
   //   title: 'login',
   //   path: '/login',
