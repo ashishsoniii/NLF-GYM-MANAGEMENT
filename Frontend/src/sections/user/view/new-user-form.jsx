@@ -18,6 +18,7 @@ export default function NewUserForm({ setClickedTitle }) {
     dateOfBirth: new Date().toISOString().slice(0, 10).split('T')[0], // Date format: dd-mm-yyyy
     gender: '',
     latestPlanName: '',
+    duration:0,
     joiningDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
     expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
     latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
@@ -132,6 +133,7 @@ export default function NewUserForm({ setClickedTitle }) {
       setUserData({
         ...userData,
         membershipPlan: value,
+        duration: currentSelectedPlan.duration,
         latestPaymentAmount: currentSelectedPlan.price,
         expiryDate: expiryDateUpdate,
         latestPlanName: currentSelectedPlan.name,
@@ -173,6 +175,7 @@ export default function NewUserForm({ setClickedTitle }) {
         workoutType: 'Fitness',
         isActive: true,
         notes: '',
+        duration: 0,
       });
       setSelectedPlan(null);
       setError('User Added Successfully');

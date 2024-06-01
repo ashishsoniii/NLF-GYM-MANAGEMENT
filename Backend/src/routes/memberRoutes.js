@@ -1,11 +1,33 @@
 const express = require("express");
 const router = express.Router();
 const Member = require("../models/Member");
-const { sendEmail } = require("./sendEmail");
+const { sendEmail, sendEmailwithAttachment } = require("./sendEmail");
 const jsPDF = require("jspdf");
 const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 const { newUser } = require("./emailTemplates/newUser");
+const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
+const puppeteer = require("puppeteer");
+
+async function generatePDFfromHTML(htmlContent) {
+  const browser = await puppeteer.launch({
+    headless: false, // Keep headless false as per your requirement
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    timeout: 60000, // Increase timeout to 60 seconds
+  });
+
+  const page = await browser.newPage();
+  try {
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" }); // Wait until network is idle
+    const pdfBuffer = await page.pdf({ format: "A4" });
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    await browser.close();
+    throw error;
+  }
+}
 
 // Route to add a new member by an admin
 router.post("/add", adminAuthMiddleware, async (req, res) => {
@@ -25,6 +47,7 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
       latestPaymentAmount,
       latestPlanName,
       payments,
+      duration,
       assignedTrainer,
       workoutType,
       isActive,
@@ -56,10 +79,37 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
 
     // Prepare email content
     const subject = "Welcome to the Gym!";
-   // Send the email
+    // Send the email
 
-    const html = newUser({name,email,phone,latestPlanName, latestPaymentAmount,joiningDate,expiryDate});
-    const emailSent = await sendEmail(email, subject, html);
+    const html = newUser({
+      name,
+      email,
+      phone,
+      latestPlanName,
+      latestPaymentAmount,
+      joiningDate,
+      expiryDate,
+    });
+    const invoicehtml = invoiceHTML({
+      name,
+      email,
+      phone,
+      latestPlanName,
+      latestPaymentDate,
+      duration,
+      latestPaymentAmount,
+      joiningDate,
+      expiryDate,
+    });
+
+    const pdfBuffer = await generatePDFfromHTML(invoicehtml);
+
+    // const emailSent = await sendEmail(email, subject, html);
+
+    const emailSent = await sendEmailwithAttachment(email, subject, html, {
+      filename: "invoice.pdf",
+      content: pdfBuffer,
+    });
 
     if (!emailSent) {
       console.log("Failed to send email & adding user");
