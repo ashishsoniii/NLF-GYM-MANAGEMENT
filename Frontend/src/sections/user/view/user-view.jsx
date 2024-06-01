@@ -33,6 +33,7 @@ export default function UserPage() {
   const [page, setPage] = useState(0);
   const [clickedTitle, setClickedTitle] = useState('all');
   const [selectExpiredFilter, setShowExpiredFilter] = useState('all');
+  const [showMemberType, setShowMemberType] = useState('all');
   const [users, setusers] = useState([]);
   const [curentUser, setcurentUser] = useState(null);
   const [order, setOrder] = useState('asc');
@@ -272,12 +273,21 @@ export default function UserPage() {
               <Stack
                 direction="row"
                 alignItems="center"
-                justifyContent="start"
+                justifyContent="space-between"
                 mb={5}
                 m={4}
                 gap={3}
               >
                 <h4>Showing All Members</h4>
+                {/* <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={() => setShowMemberType('Active')}
+
+                  // startIcon={<Iconify icon="eva:plus-fill" />}
+                >
+                  Show Active Member
+                </Button> */}
               </Stack>
             )}
             <Scrollbar>
