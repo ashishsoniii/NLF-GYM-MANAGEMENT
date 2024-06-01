@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -15,7 +15,7 @@ import TablePagination from '@mui/material/TablePagination';
 // import { users } from 'src/_mock/user';
 import AccountPage from 'src/pages/account';
 
-import Iconify from 'src/components/iconify';
+// import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 import NewUserForm from './new-user-form';
@@ -33,7 +33,7 @@ export default function UserPage() {
   const [page, setPage] = useState(0);
   const [clickedTitle, setClickedTitle] = useState('all');
   const [selectExpiredFilter, setShowExpiredFilter] = useState('all');
-  const [showMemberType, setShowMemberType] = useState('all');
+  // const [showMemberType, setShowMemberType] = useState('all');
   const [users, setusers] = useState([]);
   const [curentUser, setcurentUser] = useState(null);
   const [order, setOrder] = useState('asc');
@@ -44,10 +44,6 @@ export default function UserPage() {
 
   // Reference to the AccountPage container
   const accountPageRef = useRef(null);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [clickedTitle, selectExpiredFilter]);
 
   useEffect(() => {
     // Scroll to the AccountPage component when curentUser is updated
@@ -77,7 +73,7 @@ export default function UserPage() {
     setSelected([]);
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
@@ -96,7 +92,32 @@ export default function UserPage() {
     } catch (error) {
       console.error('Error fetching plans:', error);
     }
-  };
+  }, [clickedTitle, selectExpiredFilter]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers, clickedTitle, selectExpiredFilter]);
+
+  // const fetchUsers = useCallback(async () => {
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const response = await axios.get(
+  //       `http://localhost:3001/member/${clickedTitle}/${
+  //         clickedTitle === 'expiredUser' ? selectExpiredFilter : ''
+  //       }`,
+  //       {
+  //         headers: {
+  //           Authorization: token,
+  //         },
+  //       }
+  //     );
+  //     setUsers(response.data.members);
+  //     console.log(response.data);
+  //     console.log('users Here:', response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching plans:', error);
+  //   }
+  // }, [clickedTitle, selectExpiredFilter]);
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -260,7 +281,7 @@ export default function UserPage() {
                 >
                   <h4>
                     Showing{' '}
-                    {selectExpiredFilter == 'all'
+                    {selectExpiredFilter === 'all'
                       ? selectExpiredFilter
                       : `the Last ${selectExpiredFilter} Days`}{' '}
                     Expired Members

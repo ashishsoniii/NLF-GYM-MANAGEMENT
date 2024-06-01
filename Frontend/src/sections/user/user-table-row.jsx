@@ -198,12 +198,12 @@ export default function UserTableRow({
             setConfirmationPaymentOpen(true);
           }}
         >
-          <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
+          <Iconify icon="eva:credit-card-outline" sx={{ mr: 2 }} />
           Payment
         </MenuItem>
 
         <MenuItem onClick={handleDetailMenu}>
-          <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
+          <Iconify icon="eva:info-fill" sx={{ mr: 2 }} />
           Detail
         </MenuItem>
 
