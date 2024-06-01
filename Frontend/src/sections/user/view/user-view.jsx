@@ -32,6 +32,7 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 export default function UserPage() {
   const [page, setPage] = useState(0);
   const [clickedTitle, setClickedTitle] = useState('all');
+  const [selectExpiredFilter, setShowExpiredFilter] = useState('all');
   const [users, setusers] = useState([]);
   const [curentUser, setcurentUser] = useState(null);
   const [order, setOrder] = useState('asc');
@@ -45,7 +46,7 @@ export default function UserPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [clickedTitle]);
+  }, [clickedTitle, selectExpiredFilter]);
 
   useEffect(() => {
     // Scroll to the AccountPage component when curentUser is updated
@@ -78,11 +79,16 @@ export default function UserPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:3001/member/${clickedTitle}`, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:3001/member/${clickedTitle}/${
+          clickedTitle === 'expiredUser' ? selectExpiredFilter : ''
+        }`,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       setusers(response.data.members);
       console.log(response.data);
       console.log('users Here:', response.data);
@@ -134,12 +140,12 @@ export default function UserPage() {
   return (
     <Container>
       {/* btn code for all user - but not requres as card has been created! */}
-      {/* <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Users</Typography>
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
+        {/* <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
-        </Button>
-      </Stack> */}
+        </Button> */}
+      </Stack>
 
       <Grid container spacing={3} m={5} gap={4}>
         <Grid xs={12} sm={6} md={3}>
@@ -195,6 +201,85 @@ export default function UserPage() {
               onFilterName={handleFilterByName}
             />
 
+            {clickedTitle === 'expiredUser' && (
+              <>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="start"
+                  mb={5}
+                  m={4}
+                  gap={3}
+                >
+                  {/* <Typography variant="h4">Users</Typography> */}
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setShowExpiredFilter('all')}
+
+                    // startIcon={<Iconify icon="eva:plus-fill" />}
+                  >
+                    All Expired
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setShowExpiredFilter('7')}
+
+                    // startIcon={<Iconify icon="eva:plus-fill" />}
+                  >
+                    7 days
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setShowExpiredFilter('14')}
+
+                    // startIcon={<Iconify icon="eva:plus-fill" />}
+                  >
+                    14 Days
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setShowExpiredFilter('31')}
+
+                    // startIcon={<Iconify icon="eva:plus-fill" />}
+                  >
+                    1 Month
+                  </Button>
+                </Stack>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="start"
+                  mb={5}
+                  m={4}
+                  gap={3}
+                >
+                  <h4>
+                    Showing{' '}
+                    {selectExpiredFilter == 'all'
+                      ? selectExpiredFilter
+                      : `the Last ${selectExpiredFilter} Days`}{' '}
+                    Expired Members
+                  </h4>
+                </Stack>
+              </>
+            )}
+
+            {clickedTitle === 'all' && (
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="start"
+                mb={5}
+                m={4}
+                gap={3}
+              >
+                <h4>Showing All Members</h4>
+              </Stack>
+            )}
             <Scrollbar>
               <TableContainer sx={{ overflow: 'unset' }}>
                 <Table sx={{ minWidth: 800 }}>
@@ -217,6 +302,7 @@ export default function UserPage() {
                       { id: '' },
                     ]}
                   />
+
                   <TableBody>
                     {dataFiltered
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)

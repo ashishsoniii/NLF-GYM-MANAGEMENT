@@ -212,13 +212,59 @@ router.post("/addPayment/:id", async (req, res) => {
 
 // expired user route
 
-router.get("/expiredUser", async (req, res) => {
+// router.get("/expiredUser", async (req, res) => {
+//   try {
+//     // Get the current date
+//     const currentDate = new Date();
+
+//     // Query for members whose expiryDate is less than or equal to the current date
+//     const members = await Member.find({ expiryDate: { $lte: currentDate } });
+
+//     // Send the expired members as the response
+//     res.status(200).json({ members });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Server Error");
+//   }
+// });
+
+
+
+
+// Route to get expired users for a specified number of days or all expired users
+router.get('/expiredUser/:days', async (req, res) => {
   try {
+    // Get the number of days from the route parameters
+    const daysParam = req.params.days;
+    
     // Get the current date
     const currentDate = new Date();
+    
+    // Initialize the query object
+    let query = {};
 
-    // Query for members whose expiryDate is less than or equal to the current date
-    const members = await Member.find({ expiryDate: { $lte: currentDate } });
+    // Check if days parameter is a valid number or 'all'
+    if (daysParam === 'all') {
+      // If 'all', get all expired members (expiryDate <= currentDate)
+      query = { expiryDate: { $lte: currentDate } };
+    } else {
+      const days = parseInt(daysParam, 10);
+      
+      // Validate the days parameter
+      if (![7, 14, 31].includes(days)) {
+        return res.status(400).send("Invalid number of days. Please use 7, 14, 31, or 'all'.");
+      }
+      
+      // Calculate the target date
+      const targetDate = new Date();
+      targetDate.setDate(currentDate.getDate() - days);
+      
+      // Set the query to find members with expiryDate in the specified range
+      query = { expiryDate: { $gte: targetDate, $lte: currentDate } };
+    }
+
+    // Query for members based on the constructed query object
+    const members = await Member.find(query);
 
     // Send the expired members as the response
     res.status(200).json({ members });
@@ -228,15 +274,8 @@ router.get("/expiredUser", async (req, res) => {
   }
 });
 
-// // Route to fetch all members
-// router.get("/all", adminAuthMiddleware, async (req, res) => {
-//   try {
-//     const members = await Member.find();
-//     res.status(200).json({ members });
-//   } catch (error) {
-//     console.error("Error fetching members:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
+
+
+
 
 module.exports = router;
