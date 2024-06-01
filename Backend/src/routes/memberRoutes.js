@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Member = require("../models/Member");
+const { sendEmail } = require("./sendEmail");
 const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 
@@ -50,8 +51,76 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
     });
 
     // Save the new member to the database
-    const savedMember = await newMember.save();
 
+    // Prepare email content
+    const subject = "Welcome to the Gym!";
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333333;
+      }
+      p {
+        color: #666666;
+      }
+    </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Payment Confirmation</h1>
+        <p>Hi <strong> ${name} </strong>,</p>
+        <p>Thank you for your payment! Here are the details:</p>
+        <ul>
+          <li><strong>Name:</strong>  ${name} </li>
+          <li><strong>Email:</strong> ${email} </li>
+          <li><strong>Phone Number:</strong>  ${phone}</li>
+          <li><strong>Plan Name:</strong> ${latestPlanName} </li>
+          <li><strong>Payment Amount:</strong> ${latestPaymentAmount} Rs.</li>
+          <li><strong>Start Date:</strong>  ${joiningDate}</li>
+          <li><strong>End Date:</strong>  ${expiryDate} </li>
+          <li><strong>Validity:</strong>  ${"validityP"} Months</li>
+        </ul>
+        <p>Your invoice is attached to this email!</p>
+    
+        <p>Thank you for choosing No Limits Fitness. You are now part of our fitness community!</p>
+        <p>We are excited to help you achieve your health and fitness goals. Our team will review your goals and create a personalized plan that suits your needs.</p>
+        <p>If you have any questions or need assistance, please feel free to reach out to us at <strong>9982482431</strong>.</p>
+        <p>Congratulations on taking the step towards a healthier you. We are proud to be part of your fitness journey!</p>
+        <p>We look forward to witnessing your progress and success!</p>
+        <p><strong>Mahendra Yadav</strong><br>(Your Fitness Coach)</p>
+      </div>
+    </body>
+    </html>
+        
+    
+    `;
+    // Send the email
+    const emailSent = await sendEmail(email, subject, html);
+
+    if (!emailSent) {
+      console.log("Failed to send email & adding user");
+      return res
+        .status(500)
+        .json({ error: "Failed to send email & adding user" });
+    }
+
+    const savedMember = await newMember.save();
     res
       .status(201)
       .json({ message: "Member added successfully", member: savedMember });
@@ -59,7 +128,6 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
     console.error("Error adding member:", error);
 
     if (error.name === "ValidationError") {
-      // If the error is a validation error, extract the error messages
       const errors = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({ error: errors.join(", ") });
     }
@@ -228,37 +296,36 @@ router.post("/addPayment/:id", async (req, res) => {
 //   }
 // });
 
-
-
-
 // Route to get expired users for a specified number of days or all expired users
-router.get('/expiredUser/:days', async (req, res) => {
+router.get("/expiredUser/:days", async (req, res) => {
   try {
     // Get the number of days from the route parameters
     const daysParam = req.params.days;
-    
+
     // Get the current date
     const currentDate = new Date();
-    
+
     // Initialize the query object
     let query = {};
 
     // Check if days parameter is a valid number or 'all'
-    if (daysParam === 'all') {
+    if (daysParam === "all") {
       // If 'all', get all expired members (expiryDate <= currentDate)
       query = { expiryDate: { $lte: currentDate } };
     } else {
       const days = parseInt(daysParam, 10);
-      
+
       // Validate the days parameter
       if (![7, 14, 31].includes(days)) {
-        return res.status(400).send("Invalid number of days. Please use 7, 14, 31, or 'all'.");
+        return res
+          .status(400)
+          .send("Invalid number of days. Please use 7, 14, 31, or 'all'.");
       }
-      
+
       // Calculate the target date
       const targetDate = new Date();
       targetDate.setDate(currentDate.getDate() - days);
-      
+
       // Set the query to find members with expiryDate in the specified range
       query = { expiryDate: { $gte: targetDate, $lte: currentDate } };
     }
@@ -273,9 +340,5 @@ router.get('/expiredUser/:days', async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-
-
-
-
 
 module.exports = router;
