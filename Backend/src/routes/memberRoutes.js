@@ -267,6 +267,46 @@ router.post("/addPayment/:id", async (req, res) => {
     // Save the updated member
     await member.save();
 
+    // Prepare email content
+    const subject = "Payment Confirmation";
+    const invoicehtml = invoiceHTML({
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      latestPlanName: plan.name,
+      latestPaymentDate: newPayment.date,
+      duration: plan.duration,
+      latestPaymentAmount: amount,
+      joiningDate,
+      expiryDate,
+    });
+
+    const html = newUser({
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      latestPlanName: plan.name,
+      latestPaymentAmount: amount,
+      joiningDate,
+      expiryDate,
+    });
+
+
+    const pdfBuffer = await generatePDFfromHTML(invoicehtml);
+
+    const emailSent = await sendEmailwithAttachment(email, subject, html, {
+      filename: "invoice.pdf",
+      content: pdfBuffer,
+    });
+
+
+    if (!emailSent) {
+      console.log("Failed to send email");
+      return res.status(500).json({ error: "Failed to send email" });
+    }else{
+      console.log("Email send");
+    }
+
     res.status(200).json({ message: "Payment added successfully", member });
   } catch (error) {
     console.error("Error adding payment:", error);

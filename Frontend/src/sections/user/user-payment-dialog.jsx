@@ -108,47 +108,31 @@ function UserPaymentDialog({
       setError('Please select a plan');
       return;
     }
-
+  
     try {
       const token = localStorage.getItem('token');
-      const newPayment = {
+      const paymentData = {
         amount: selectedPlan.price,
-        date: new Date(),
-        paymentMethod: 'Cash',
+        planId: selectedPlan._id,
         joiningDate: userData.joiningDate,
         expiryDate: userData.expiryDate,
-        plan: {
-          planId: selectedPlan._id,
-          name: selectedPlan.name,
-          duration: selectedPlan.duration,
-          price: selectedPlan.price,
-        },
       };
-
-      const updatedUserData = {
-        ...userData,
-        latestPaymentDate: new Date(),
-        latestPaymentAmount: selectedPlan.price,
-        latestPlanName: selectedPlan.name,
-        payments: [...currentDataRow.payments, newPayment],
-      };
-
-      await axios.put(`http://localhost:3001/member/modify/${id}`, updatedUserData, {
+  
+      await axios.post(`http://localhost:3001/member/addPayment/${id}`, paymentData, {
         headers: {
           Authorization: `${token}`,
         },
       });
-
+  
       fetchUsers();
+      setConfirmationEditOpen(false);
       console.log('Payment added successfully');
     } catch (error) {
       console.error('Error adding payment:', error);
       setError(error.message);
     }
-
-    setConfirmationEditOpen(false);
   };
-
+  
   return (
     <Dialog
       open={isConfirmationEditOpen}
