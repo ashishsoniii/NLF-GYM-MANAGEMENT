@@ -229,7 +229,7 @@ export default function UserPage() {
                   direction="row"
                   alignItems="center"
                   justifyContent="start"
-                  mb={5}
+                  mb={3}
                   m={4}
                   gap={3}
                 >
@@ -295,8 +295,8 @@ export default function UserPage() {
                 direction="row"
                 alignItems="center"
                 justifyContent="space-between"
-                mb={5}
-                m={4}
+                mb={2}
+                m={3}
                 gap={3}
               >
                 <h4>Showing All Members</h4>
