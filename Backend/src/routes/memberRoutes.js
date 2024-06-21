@@ -281,6 +281,7 @@ router.post("/addPayment/:id", async (req, res) => {
       expiryDate,
     });
 
+    console.log(member);
     const html = newUser({
       name: member.name,
       email: member.email,
@@ -291,19 +292,22 @@ router.post("/addPayment/:id", async (req, res) => {
       expiryDate,
     });
 
-
     const pdfBuffer = await generatePDFfromHTML(invoicehtml);
 
-    const emailSent = await sendEmailwithAttachment(email, subject, html, {
-      filename: "invoice.pdf",
-      content: pdfBuffer,
-    });
-
+    const emailSent = await sendEmailwithAttachment(
+      member.email,
+      subject,
+      html,
+      {
+        filename: "invoice.pdf",
+        content: pdfBuffer,
+      }
+    );
 
     if (!emailSent) {
       console.log("Failed to send email");
       return res.status(500).json({ error: "Failed to send email" });
-    }else{
+    } else {
       console.log("Email send");
     }
 
