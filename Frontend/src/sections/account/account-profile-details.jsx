@@ -92,7 +92,6 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   // required
                   // disabled
                   disabled
-
                   value={values.email}
                 />
               </Grid>
@@ -104,7 +103,6 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   onChange={handleChange}
                   value={values.phone}
                   disabled
-
                 />
               </Grid>
               <Grid xs={12} md={6}>
@@ -114,7 +112,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="joiningDate"
                   onChange={handleChange}
                   disabled
-                  value={values.joiningDate}
+                  value={new Date(values.joiningDate).toISOString().slice(0, 10).split('T')[0]}
                 />
               </Grid>
               <Grid xs={12} md={6}>
@@ -124,7 +122,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="expiryDate"
                   onChange={handleChange}
                   disabled
-                  value={values.expiryDate}
+                  value={new Date(values.expiryDate).toISOString().slice(0, 10).split('T')[0]}
                 />
               </Grid>
               <Grid xs={12} md={6}>
@@ -134,7 +132,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="dob"
                   onChange={handleChange}
                   disabled
-                  value={values.dateOfBirth}
+                  value={new Date(values.dateOfBirth).toISOString().slice(0, 10).split('T')[0]}
                 />
               </Grid>
               <Grid xs={12} md={6}>
@@ -154,7 +152,9 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   name="latestPaymentDate"
                   onChange={handleChange}
                   disabled
-                  value={values.latestPaymentDate}
+                  value={
+                    new Date(values.latestPaymentDate).toISOString().slice(0, 10).split('T')[0]
+                  }
                 />
               </Grid>
               <Grid xs={12} md={6}>

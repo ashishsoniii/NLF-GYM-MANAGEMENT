@@ -5,11 +5,11 @@ import {
   Box,
   Card,
   Avatar,
-  Button,
-  Divider,
+  // Button,
+  // Divider,
   Typography,
   CardContent,
-  CardActions,
+  // CardActions,
 } from '@mui/material';
 
 export const AccountProfile = ({ curentUser }) => {
@@ -82,12 +82,12 @@ export const AccountProfile = ({ curentUser }) => {
           </Typography>
         </Box>
       </CardContent>
-      <Divider />
+      {/* <Divider />
       <CardActions>
         <Button fullWidth variant="text">
           Upload picture
         </Button>
-      </CardActions>
+      </CardActions> */}
     </Card>
   );
 };
