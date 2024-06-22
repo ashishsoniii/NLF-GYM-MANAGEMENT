@@ -25,7 +25,7 @@ const navConfig = [
   {
     title: 'Email',
     path: '/email',
-    icon: icon('ic_mail'),
+    icon: icon('ic_email'),
   },
   // {
   //   title: 'Expired User',
