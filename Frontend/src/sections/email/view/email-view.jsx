@@ -182,7 +182,6 @@ export default function EmailPage() {
                       { id: 'email', label: 'Email' },
                       { id: 'subject', label: 'Subject' },
                       { id: 'sendAt', label: 'Send At', align: 'center' },
-                      { id: '' },
                     ]}
                   />
                   <TableBody>
