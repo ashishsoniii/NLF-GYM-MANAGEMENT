@@ -25,6 +25,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
     phone: curentUser.phone,
     email: curentUser.email,
     address: curentUser.address,
+    dateOfBirth: curentUser.dateOfBirth,
     joiningDate: curentUser.joiningDate,
     expiryDate: curentUser.expiryDate,
     latestPlanName: curentUser.latestPlanName,
@@ -41,6 +42,7 @@ export const AccountProfileDetails = ({ curentUser }) => {
       email: curentUser.email,
       address: curentUser.address,
       joiningDate: curentUser.joiningDate,
+      dateOfBirth: curentUser.dateOfBirth,
       expiryDate: curentUser.expiryDate,
       latestPlanName: curentUser.latestPlanName,
       latestPaymentDate: curentUser.latestPaymentDate,
@@ -123,6 +125,16 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   onChange={handleChange}
                   disabled
                   value={values.expiryDate}
+                />
+              </Grid>
+              <Grid xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="dob"
+                  name="dob"
+                  onChange={handleChange}
+                  disabled
+                  value={values.dateOfBirth}
                 />
               </Grid>
               <Grid xs={12} md={6}>
