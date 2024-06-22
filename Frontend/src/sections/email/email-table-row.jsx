@@ -26,6 +26,7 @@ import EditPlanDialog from './email-edit-dialog';
 
 export default function UserTableRow({
   fetchPlans,
+  email,
   selected,
   id,
   avatarUrl,
@@ -117,35 +118,14 @@ export default function UserTableRow({
   return (
     <>
       <TableRow hover tabIndex={-1} duration="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox disableRipple checked={selected} onChange={handleClick} />
-        </TableCell>
 
-        <TableCell component="th" scope="row" padding="none">
-          <Stack direction="row" alignItems="center" spacing={2}>
-            {/* <Avatar alt={id} src={avatarUrl} /> */}
-            <Typography variant="subtitle2" noWrap>
-              {id}
-            </Typography>
-          </Stack>
-        </TableCell>
 
-        <TableCell>{name}</TableCell>
+        <TableCell>{email.nameTo}</TableCell>
 
-        <TableCell>{duration} Months</TableCell>
-        <TableCell>{description}</TableCell>
+        <TableCell>{email.emailTo}</TableCell>
+        <TableCell>{email.subject}</TableCell>
 
-        <TableCell align="center">{price}</TableCell>
-
-        <TableCell>
-          <Label color={status === 'active' ? 'success' : 'error'}>{status}</Label>
-        </TableCell>
-
-        <TableCell align="right">
-          <IconButton onClick={handleOpenMenu}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
+        <TableCell align="center">{email.sentAt}</TableCell>
       </TableRow>
 
       <Popover
@@ -231,6 +211,7 @@ UserTableRow.propTypes = {
   name: PropTypes.any,
   handleClick: PropTypes.func,
   fetchPlans: PropTypes.func,
+  email: PropTypes.any,
   price: PropTypes.any,
   id: PropTypes.any,
   description: PropTypes.any,

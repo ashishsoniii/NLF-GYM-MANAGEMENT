@@ -55,8 +55,13 @@ export default function EmailPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/plan'); // Replace with your API endpoint
-      setPlans(response.data);
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3001/member/emails', {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }); // Replace with your API endpoint
+      setPlans(response.data.emails);
       console.log('Error fetcaing plans:', response.data);
     } catch (error) {
       console.error('Error fetcaing plans:', error);
@@ -172,12 +177,11 @@ export default function EmailPage() {
                     onRequestSort={handleSort}
                     onSelectAllClick={handleSelectAllClick}
                     headLabel={[
-                      { id: '_id', label: 'Plan Id' },
-                      { id: 'name', label: 'Plan Name' },
-                      { id: 'duration', label: 'Plan Duration (in Months)' },
-                      { id: 'description', label: 'Description' },
-                      { id: 'price', label: 'Price', align: 'center' },
-                      { id: 'isActive', label: 'Status' },
+                      // { id: '_id', label: 'Plan Id' },
+                      { id: 'name', label: 'Name' },
+                      { id: 'email', label: 'Email' },
+                      { id: 'subject', label: 'Subject' },
+                      { id: 'sendAt', label: 'Send At', align: 'center' },
                       { id: '' },
                     ]}
                   />
@@ -188,13 +192,12 @@ export default function EmailPage() {
                         <UserTableRow
                           fetchPlans={fetchPlans}
                           key={row._id}
-                          id={row._id}
-                          name={row.name}
-                          duration={row.duration}
-                          description={row.description}
-                          price={row.price}
-                          status={row.isActive ? 'active' : 'inactive'}
-                          avatarUrl={row.avatarUrl}
+                          email={row}
+                          duration={row.email}
+                          description={row.subject}
+                          price={row.emailTo}
+                          // status={row.isActive ? 'active' : 'inactive'}
+                          // avatarUrl={row.avatarUrl}
                           selected={selected.indexOf(row.name) !== -1}
                           handleClick={(event) => handleClick(event, row.name)}
                         />
