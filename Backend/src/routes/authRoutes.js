@@ -109,6 +109,38 @@ router.post("/adminRegistration", async (req, res) => {
   }
 });
 
+// get admin details
+// Route to fetch user details based on token
+router.get("/userDetails", async (req, res) => {
+  try {
+    // Extract token from headers or query parameters
+    const token = req.headers.authorization; 
+
+    // Verify token
+    const decodedToken = jwt.verify(token, secretKey);
+
+    // Extract email from decoded token
+    const { email } = decodedToken;
+
+    // Find user (either Trainer or Admin) by email and exclude password field
+    let user = await Trainer.findOne({ email }).select("-password");
+
+    if (!user) {
+      user = await Admin.findOne({ email }).select("-password");
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Return user details
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ error: "Failed to fetch user details" });
+  }
+});
+
 // Trainer Login
 
 // Trainer login route
@@ -150,6 +182,43 @@ router.post("/trainerLogin", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+// change admin password
+
+router.post("/changePassword",  async (req, res) => {
+  try {
+    const { userID, oldPassword, newPassword } = req.body;
+
+    // Retrieve user from database
+    const user = await Admin.findById(userID);
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Verify old password
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid old password" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
 
 // admin login
 

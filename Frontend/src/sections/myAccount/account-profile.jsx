@@ -5,53 +5,46 @@ import {
   Box,
   Card,
   Avatar,
-  // Button,
-  // Divider,
   Typography,
   CardContent,
-  // CardActions,
 } from '@mui/material';
 
-export const AccountProfile = ({ curentUser }) => {
-  // We'll keep user data in state to update it once we can access the window object.
+export const AccountProfile = ({ userDetails }) => {
+  // Initialize user state with default values
+  console.log(userDetails);
+  console.log(userDetails);
+  console.log(userDetails);
+  console.log(userDetails);
+  console.log(userDetails);
   const [user, setUser] = useState({
-    avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
-    city: curentUser.phone,
+    avatar: '/assets/images/avatars/avatar_1.jpg',
+    email: '',
     country: 'USA',
     jobTitle: 'Senior Developer',
-    name: curentUser.name, // Placeholder for name until we fetch data
+    name: '', // Placeholder for name until we fetch data
     timezone: 'GMT-5:30',
   });
 
+  // Update user state when userDetails changes
   useEffect(() => {
-    setUser({
-      avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
-      city: curentUser.phone,
-      country: 'USA',
-      jobTitle: 'Senior Developer',
-      name: curentUser.name, // Placeholder for name until we fetch data
-      timezone: 'GTM-7',
-    });
-  }, [curentUser]);
+    // Check if userDetails is defined before updating user state
+    if (userDetails) {
+      setUser({
+        avatar: '/assets/images/avatars/avatar_1.jpg',
+        email: userDetails.email,
+        country: 'USA',
+        jobTitle: 'Senior Developer',
+        name: userDetails.name,
+        timezone: 'GTM-7',
+      });
+    }
+  }, [userDetails]);
 
-  // useEffect will run this code once the component is mounted in the client (where window is defined).
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     const storedUserData = window.sessionStorage.getItem("user");
-  //     if (storedUserData) {
-  //       const userData = JSON.parse(storedUserData);
-  //       // Now we can safely access userData and update the state.
-  //       setUser((prevUser) => ({
-  //         ...prevUser,
-  //         name: userData.name, // assuming 'name' is a property of your stored user object
-  //         email: userData.email, // assuming 'name' is a property of your stored user object
-  //         lastLogin : userData.lastLogin ? new Date(userData.lastLogin).toLocaleDateString() : 'Never'
-
-  //         // You can add any other properties from userData that you need.
-  //       }));
-  //     }
-  //   }
-  // }, []); // Empty dependency array means this useEffect runs once when component is mounted.
+  // Additional logging for debugging
+  console.log("Current User:");
+  console.log(userDetails);
+  console.log("User State:");
+  console.log(user);
 
   return (
     <Card>
@@ -75,23 +68,20 @@ export const AccountProfile = ({ curentUser }) => {
             {user.name}
           </Typography>
           <Typography color="text.secondary" variant="body2">
-            {user.city}
+            {user.email}
           </Typography>
+          {/* Example: Displaying lastLogin if available in userDetails */}
           <Typography color="text.secondary" variant="body2">
-            {user.lastLogin}
+            {userDetails && userDetails.lastLogin ? userDetails.lastLogin : ''}
           </Typography>
         </Box>
       </CardContent>
-      {/* <Divider />
-      <CardActions>
-        <Button fullWidth variant="text">
-          Upload picture
-        </Button>
-      </CardActions> */}
     </Card>
   );
 };
 
 AccountProfile.propTypes = {
-  curentUser: PropTypes.any,
+  userDetails: PropTypes.object, // Adjust PropTypes to match expected shape of userDetails
 };
+
+export default AccountProfile;

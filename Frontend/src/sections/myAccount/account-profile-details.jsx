@@ -14,41 +14,25 @@ import {
 
 // const user = window.sessionStorage.getItem("user");
 
-export const AccountProfileDetails = ({ curentUser }) => {
+export const AccountProfileDetails = ({ userDetails }) => {
   console.log('edr hi ');
-  console.log(curentUser);
-  console.log(curentUser);
+  console.log(userDetails);
+  console.log(userDetails);
   const [values, setValues] = useState({
-    name: curentUser.name,
-    phone: curentUser.phone,
-    email: curentUser.email,
-    address: curentUser.address,
-    dateOfBirth: curentUser.dateOfBirth,
-    joiningDate: curentUser.joiningDate,
-    expiryDate: curentUser.expiryDate,
-    latestPlanName: curentUser.latestPlanName,
-    latestPaymentDate: curentUser.latestPaymentDate,
-    membershipPlan: curentUser.membershipPlan,
-    payments: curentUser.payments,
-    workoutType: curentUser.workoutType,
+    name: userDetails.name,
+    phone: userDetails.phone,
+    email: userDetails.email,
+    address: userDetails.address,
   });
 
   useEffect(() => {
     setValues({
-      name: curentUser.name,
-      phone: curentUser.phone,
-      email: curentUser.email,
-      address: curentUser.address,
-      joiningDate: curentUser.joiningDate,
-      dateOfBirth: curentUser.dateOfBirth,
-      expiryDate: curentUser.expiryDate,
-      latestPlanName: curentUser.latestPlanName,
-      latestPaymentDate: curentUser.latestPaymentDate,
-      membershipPlan: curentUser.membershipPlan,
-      payments: curentUser.payments,
-      workoutType: curentUser.workoutType,
+      name: userDetails.name,
+      phone: userDetails.phone,
+      email: userDetails.email,
+      address: userDetails.address,
     });
-  }, [curentUser]);
+  }, [userDetails]);
 
   const handleChange = useCallback((event) => {
     setValues((prevState) => ({
@@ -93,86 +77,15 @@ export const AccountProfileDetails = ({ curentUser }) => {
                   value={values.email}
                 />
               </Grid>
+
               <Grid xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Phone Number"
+                  label="phone"
                   name="phone"
                   onChange={handleChange}
+                  disabled
                   value={values.phone}
-                  disabled
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="joiningDate"
-                  name="joiningDate"
-                  onChange={handleChange}
-                  disabled
-                  value={new Date(values.joiningDate).toISOString().slice(0, 10).split('T')[0]}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="expiryDate"
-                  name="expiryDate"
-                  onChange={handleChange}
-                  disabled
-                  value={new Date(values.expiryDate).toISOString().slice(0, 10).split('T')[0]}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="dob"
-                  name="dob"
-                  onChange={handleChange}
-                  disabled
-                  value={new Date(values.dateOfBirth).toISOString().slice(0, 10).split('T')[0]}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="latestPlanName"
-                  name="latestPlanName"
-                  onChange={handleChange}
-                  disabled
-                  value={values.latestPlanName}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="latestPaymentDate."
-                  name="latestPaymentDate"
-                  onChange={handleChange}
-                  disabled
-                  value={
-                    new Date(values.latestPaymentDate).toISOString().slice(0, 10).split('T')[0]
-                  }
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="membershipPlan"
-                  name="membershipPlan"
-                  onChange={handleChange}
-                  disabled
-                  value={values.membershipPlan}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="address"
-                  name="address"
-                  onChange={handleChange}
-                  disabled
-                  value={values.address}
                 />
               </Grid>
             </Grid>
@@ -188,5 +101,5 @@ export const AccountProfileDetails = ({ curentUser }) => {
 };
 
 AccountProfileDetails.propTypes = {
-  curentUser: PropTypes.any,
+  userDetails: PropTypes.any,
 };

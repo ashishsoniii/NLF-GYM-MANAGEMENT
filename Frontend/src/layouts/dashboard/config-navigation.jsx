@@ -30,7 +30,7 @@ const navConfig = [
   {
     title: 'My Account',
     path: '/myAccount',
-    icon: icon('ic_email'),
+    icon: icon('ic_userz'),
   },
   // {
   //   title: 'Expired User',
