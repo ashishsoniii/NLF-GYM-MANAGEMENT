@@ -411,4 +411,41 @@ router.get("/emails", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+
+// Route to send emails to users - everyone & custom
+router.post("/sendEmail", adminAuthMiddleware, async (req, res) => {
+  const { emailOption, customEmails, subject, content } = req.body;
+
+  try {
+    let emailsToSend = [];
+
+    if (emailOption === 'everyone') {
+      // Fetch all members' emails
+      const members = await Member.find({}, 'email');
+      console.log(members);
+      emailsToSend = members.map(member => member.email);
+      console.log(emailsToSend);
+    } else if (emailOption === 'custom') {
+      // Use custom emails
+      emailsToSend = customEmails.split(',').map(email => email.trim());
+    }
+
+    if (emailsToSend.length === 0) {
+      return res.status(400).json({ error: "No emails to send" });
+    }
+
+    // Send emails
+    for (const email of emailsToSend) {
+      await sendEmail(email, subject, content);
+    }
+    await saveEmailRecord(emailOption === 'everyone' ? 'everyone' : 'custom', subject, emailsToSend.join(', '));
+    
+    res.status(200).json({ message: "Emails sent successfully" });
+  } catch (error) {
+    console.error("Error sending emails:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 module.exports = router;

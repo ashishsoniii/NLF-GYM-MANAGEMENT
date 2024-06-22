@@ -13,8 +13,8 @@ import TablePagination from '@mui/material/TablePagination';
 
 import Scrollbar from 'src/components/scrollbar';
 
-import AddPlanForm from './form-new-plan';
 import TableNoData from '../email-no-data';
+import SendEmailForm from './form-new-email';
 import UserTableRow from '../email-table-row';
 import UserTableHead from '../email-table-head';
 import TableEmptyRows from '../email-empty-rows';
@@ -227,8 +227,8 @@ export default function EmailPage() {
         )}{' '}
         {clickedTitle === 'Send Email' && (
           <>
-            {/* add new pla n here */}
-            <AddPlanForm setClickedTitle={setClickedTitle} />
+            {/* Send Email here */}
+            <SendEmailForm setClickedTitle={setClickedTitle} />
           </>
         )}{' '}
       </Card>

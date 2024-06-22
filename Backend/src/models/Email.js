@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const emailSchema = new Schema({
   nameTo: {
     type: String,
-    ref: "Member",
     required: true,
   },
   subject: {
