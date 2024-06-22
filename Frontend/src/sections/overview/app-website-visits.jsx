@@ -25,13 +25,21 @@ export default function AppWebsiteVisits({ title, subheader, chart, ...other }) 
     xaxis: {
       type: 'datetime',
     },
+    yaxis: {
+      forceNiceScale: true,
+      labels: {
+        formatter(value) {
+          return Math.round(value);
+        },
+      },
+    },
     tooltip: {
       shared: true,
       intersect: false,
       y: {
-        formatter: (value) => {
+        formatter(value) {
           if (typeof value !== 'undefined') {
-            return `${value.toFixed(0)} visits`;
+            return `${Math.round(value)} `;
           }
           return value;
         },
@@ -39,7 +47,7 @@ export default function AppWebsiteVisits({ title, subheader, chart, ...other }) 
     },
     ...options,
   });
-
+  
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} />

@@ -138,7 +138,7 @@ router.get("/members/joined", async (req, res) => {
 
 router.get("/members/chart-data", async (req, res) => {
   try {
-    // Aggregate data to get counts and other details per month
+    // Aggregate data to get counts and other details per month for joining dates
     const joinData = await Member.aggregate([
       {
         $group: {
@@ -157,6 +157,7 @@ router.get("/members/chart-data", async (req, res) => {
       },
     ]);
 
+    // Aggregate data to get counts of payments per month
     const paymentData = await Member.aggregate([
       { $unwind: "$payments" },
       {
@@ -165,7 +166,7 @@ router.get("/members/chart-data", async (req, res) => {
             month: { $month: "$payments.date" },
             year: { $year: "$payments.date" },
           },
-          totalPayment: { $sum: "$payments.amount" },
+          count: { $sum: 1 }, // Count the number of payments
         },
       },
       {
@@ -176,6 +177,7 @@ router.get("/members/chart-data", async (req, res) => {
       },
     ]);
 
+    // Aggregate data to get the cumulative total payments
     const totalPayments = await Member.aggregate([
       { $unwind: "$payments" },
       {
@@ -209,10 +211,10 @@ router.get("/members/chart-data", async (req, res) => {
       },
     ];
 
-    const totalPaymentMap = new Map();
+    const paymentCountMap = new Map();
     paymentData.forEach((item) => {
       const dateKey = `${item._id.year}-${item._id.month}`;
-      totalPaymentMap.set(dateKey, item.totalPayment);
+      paymentCountMap.set(dateKey, item.count);
     });
 
     let cumulativeTotalPayments = 0;
@@ -220,9 +222,9 @@ router.get("/members/chart-data", async (req, res) => {
       const dateKey = `${item._id.year}-${item._id.month}`;
       labels.push(`${item._id.month}/01/${item._id.year}`);
       series[0].data.push(item.count);
-      const monthlyPayment = totalPaymentMap.get(dateKey) || 0;
-      series[1].data.push(monthlyPayment);
-      cumulativeTotalPayments += monthlyPayment;
+      const monthlyPaymentCount = paymentCountMap.get(dateKey) || 0;
+      series[1].data.push(monthlyPaymentCount);
+      cumulativeTotalPayments += monthlyPaymentCount;
       series[2].data.push(cumulativeTotalPayments);
     });
 
@@ -232,6 +234,41 @@ router.get("/members/chart-data", async (req, res) => {
     });
   } catch (error) {
     res.status(500).send(error.message);
+  }
+});
+
+
+// Route to get MLE (Male/Female/Other) statistics
+router.get('/members/mle-statistics', async (req, res) => {
+  try {
+    const mleStatistics = await Member.aggregate([
+      {
+        $group: {
+          _id: '$gender', // Group by gender field
+          count: { $sum: 1 }, // Count number of members in each gender category
+        },
+      },
+      {
+        $project: {
+          _id: 0, // Exclude _id field from the output
+          gender: '$_id', // Rename _id field to gender
+          count: 1, // Include count field in the output
+        },
+      },
+    ]);
+
+    // Prepare data in the required format for the frontend
+    const formattedData = mleStatistics.map((stat) => ({
+      label: stat.gender,
+      value: stat.count,
+    }));
+
+    res.json({
+      series: formattedData,
+    });
+  } catch (error) {
+    console.error('Error fetching MLE statistics:', error);
+    res.status(500).json({ error: 'Failed to fetch MLE statistics' });
   }
 });
 
