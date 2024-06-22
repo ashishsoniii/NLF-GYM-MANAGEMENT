@@ -8,6 +8,16 @@ const adminAuthMiddleware = require("../middleware/authMiddleware");
 const { newUser } = require("./emailTemplates/newUser");
 const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
 const puppeteer = require("puppeteer");
+const Email = require("../models/Email"); // Import the Email model
+
+async function saveEmailRecord(userId, subject, emailContent) {
+  const emailRecord = new Email({
+    nameTo: userId,
+    subject: subject,
+    emailTo: emailContent,
+  });
+  await emailRecord.save();
+}
 
 async function generatePDFfromHTML(htmlContent) {
   const browser = await puppeteer.launch({
@@ -117,6 +127,9 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
         .status(500)
         .json({ error: "Failed to send email & adding user" });
     }
+
+    // Save email record
+    await saveEmailRecord(newMember.name, subject, email);
 
     const savedMember = await newMember.save();
     res
@@ -310,6 +323,8 @@ router.post("/addPayment/:id", async (req, res) => {
     } else {
       console.log("Email send");
     }
+    // Save email record
+    await saveEmailRecord(member.name, subject, member.email);
 
     res.status(200).json({ message: "Payment added successfully", member });
   } catch (error) {
@@ -380,6 +395,19 @@ router.get("/expiredUser/:days", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
+  }
+});
+
+// gets all sent emails!
+router.get("/emails", adminAuthMiddleware, async (req, res) => {
+  try {
+    // Fetch all emails sorted by sentAt in descending order
+    const emails = await Email.find().sort({ sentAt: -1 });
+
+    res.status(200).json({ emails });
+  } catch (error) {
+    console.error("Error fetching emails:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

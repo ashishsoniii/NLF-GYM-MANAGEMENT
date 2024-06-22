@@ -27,6 +27,7 @@ export default function LoginView() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorLogin, setErrorLogin] = useState(null);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -56,6 +57,7 @@ export default function LoginView() {
       }
     } catch (error) {
       console.error('Error:', error);
+      setErrorLogin(error.response.data.error);
     }
   };
 
@@ -87,6 +89,16 @@ export default function LoginView() {
         />
       </Stack>
 
+      {errorLogin && (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="flex-start"
+          sx={{ my: 0, color: 'red' }}
+        >
+          <p>{errorLogin}</p>
+        </Stack>
+      )}
       <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
         <Link variant="subtitle2" underline="hover">
           Forgot password?
