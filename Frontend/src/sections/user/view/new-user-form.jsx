@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
+
 
 export default function NewUserForm({ setClickedTitle }) {
   const [userData, setUserData] = useState({
@@ -18,7 +19,7 @@ export default function NewUserForm({ setClickedTitle }) {
     dateOfBirth: new Date().toISOString().slice(0, 10).split('T')[0], // Date format: dd-mm-yyyy
     gender: '',
     latestPlanName: '',
-    duration:0,
+    duration: 0,
     joiningDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
     expiryDate: new Date().toISOString().slice(0, 10).split('T')[0],
     latestPaymentDate: new Date().toISOString().slice(0, 10).split('T')[0], // Default to current date
@@ -32,6 +33,7 @@ export default function NewUserForm({ setClickedTitle }) {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Fetch plans from backend when component mounts
@@ -146,6 +148,8 @@ export default function NewUserForm({ setClickedTitle }) {
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
+
     try {
       const token = localStorage.getItem('token');
       console.log(userData);
@@ -183,6 +187,8 @@ export default function NewUserForm({ setClickedTitle }) {
     } catch (errors) {
       console.error('Error adding user:', errors);
       setError(errors.response.data.error);
+    } finally {
+      setLoading(false); // Set loading to false when the login completes
     }
   };
 
@@ -319,9 +325,9 @@ export default function NewUserForm({ setClickedTitle }) {
 
       {/* Add more fields (joiningDate, expiryDate, latestPaymentDate, etc.) as needed */}
       <Grid item xs={12} sm={6} md={3} mx={3}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <LoadingButton variant="contained" color="primary" onClick={handleSubmit} loading={loading}>
           Add User
-        </Button>
+        </LoadingButton>
         {error && (
           <Typography variant="body2" color="error" sx={{ mt: 1 }}>
             {error}

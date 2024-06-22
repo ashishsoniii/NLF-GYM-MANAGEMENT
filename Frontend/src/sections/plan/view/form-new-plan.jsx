@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
+
 
 export default function AddPlanForm({ setClickedTitle }) {
   const [planData, setPlanData] = useState({
@@ -16,6 +17,7 @@ export default function AddPlanForm({ setClickedTitle }) {
   });
 
   const [errorshow, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // State to track loading
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,6 +25,8 @@ export default function AddPlanForm({ setClickedTitle }) {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); 
+
     try {
       // Retrieve the authentication token from local storage
       const token = localStorage.getItem('token');
@@ -49,6 +53,9 @@ export default function AddPlanForm({ setClickedTitle }) {
       console.error('Error adding plan:', error);
       // Display error message
       setError(error.response.data.error);
+    }
+    finally {
+      setLoading(false); // Set loading to false when the login completes
     }
   };
 
@@ -103,9 +110,9 @@ export default function AddPlanForm({ setClickedTitle }) {
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3} mx={3}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <LoadingButton variant="contained" color="primary" onClick={handleSubmit} loading={loading}>
           Add Plan
-        </Button>
+        </LoadingButton>
         {errorshow && (
           <Typography variant="body2" color="error" sx={{ mt: 1 }}>
             {errorshow}

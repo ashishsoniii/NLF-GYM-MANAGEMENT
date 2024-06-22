@@ -2,10 +2,11 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
+import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Grid,
-  Dialog,
   Button,
+  Dialog,
   MenuItem,
   TextField,
   Typography,
@@ -33,19 +34,21 @@ function UserPaymentDialog({
   const [plans, setPlans] = useState([]);
   const [errorshow, setError] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loading, setLoading] = useState(false); // State to track loading
 
   useEffect(() => {
     fetchPlans();
   }, []);
 
   const fetchPlans = async () => {
+
     try {
       const response = await axios.get('http://localhost:3001/plan/active');
       setPlans(response.data);
     } catch (error) {
       console.error('Error fetching plans:', error);
       setError('Error fetching plans');
-    }
+    } 
   };
 
   const calculateExpiryDate = (joiningDate, durationInMonths) => {
@@ -104,11 +107,13 @@ function UserPaymentDialog({
   };
 
   const handleAddPayment = async () => {
+    setLoading(true);
+
     if (!selectedPlan) {
       setError('Please select a plan');
       return;
     }
-  
+
     try {
       const token = localStorage.getItem('token');
       const paymentData = {
@@ -117,22 +122,24 @@ function UserPaymentDialog({
         joiningDate: userData.joiningDate,
         expiryDate: userData.expiryDate,
       };
-  
+
       await axios.post(`http://localhost:3001/member/addPayment/${id}`, paymentData, {
         headers: {
           Authorization: `${token}`,
         },
       });
-  
+
       fetchUsers();
       setConfirmationEditOpen(false);
       console.log('Payment added successfully');
     } catch (error) {
       console.error('Error adding payment:', error);
       setError(error.message);
+    } finally {
+      setLoading(false); // Set loading to false when the login completes
     }
   };
-  
+
   return (
     <Dialog
       open={isConfirmationEditOpen}
@@ -248,9 +255,9 @@ function UserPaymentDialog({
         <Button onClick={() => setConfirmationEditOpen(false)} color="primary">
           Cancel
         </Button>
-        <Button onClick={handleAddPayment} color="primary">
+        <LoadingButton onClick={handleAddPayment} color="primary" loading={loading}>
           Add Payment
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

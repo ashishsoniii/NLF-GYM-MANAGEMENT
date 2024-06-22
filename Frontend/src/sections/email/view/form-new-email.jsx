@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 
 import Grid from '@mui/material/Grid';
 import Select from '@mui/material/Select';
-import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
+import LoadingButton from '@mui/lab/LoadingButton';
 import FormControl from '@mui/material/FormControl';
 
 export default function SendEmailForm({ setClickedTitle }) {
@@ -22,6 +22,7 @@ export default function SendEmailForm({ setClickedTitle }) {
   });
 
   const [errorShow, setErrorShow] = useState(null);
+  const [loading, setLoading] = useState(false); // State to track loading
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +38,8 @@ export default function SendEmailForm({ setClickedTitle }) {
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
+
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:3001/member/sendEmail', emailData, {
@@ -59,10 +62,10 @@ export default function SendEmailForm({ setClickedTitle }) {
     } catch (error) {
       console.error('Error sending email:', error);
       setErrorShow(error.response?.data?.error || 'Error sending email');
+    } finally {
+      setLoading(false); // Set loading to false when the login completes
     }
   };
-
-
 
   return (
     <Grid columnGap={1} item xs zeroMinWidth spacing={2} m={3}>
@@ -71,7 +74,11 @@ export default function SendEmailForm({ setClickedTitle }) {
       <Grid item xs={12} sm={6} md={3}>
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Email Option</InputLabel>
-          <Select value={emailData.emailOption} onChange={handleEmailOptionChange} label="Email Option">
+          <Select
+            value={emailData.emailOption}
+            onChange={handleEmailOptionChange}
+            label="Email Option"
+          >
             <MenuItem value="everyone">Everyone</MenuItem>
             <MenuItem value="custom">Custom</MenuItem>
           </Select>
@@ -116,9 +123,9 @@ export default function SendEmailForm({ setClickedTitle }) {
         />
       </Grid>
       <Grid item xs={12} sm={6} md={3} mx={3}>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Add Plan
-        </Button>
+        <LoadingButton variant="contained" color="primary" onClick={handleSubmit} loading={loading}>
+          Send Email
+        </LoadingButton>
         {errorShow && (
           <Typography variant="body2" color="error" sx={{ mt: 1 }}>
             {errorShow}

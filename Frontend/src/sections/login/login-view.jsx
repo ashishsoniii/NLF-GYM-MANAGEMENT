@@ -28,36 +28,32 @@ export default function LoginView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorLogin, setErrorLogin] = useState(null);
+  const [loading, setLoading] = useState(false); // State to track loading
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // const handleClick = () => {
-  //   router.push('../');
-  // };
-
   const handleLogin = async () => {
+    setLoading(true); 
     try {
       const response = await axios.post('http://localhost:3001/auth/adminLogin', {
         email,
         password,
       });
 
-      // If login is successful, store JWT token in local storage
-      // console.log(response.data);
       if (response.status === 200) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('email', response.data.email);
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('phone', response.data.phone);
-        // Redirect to desired route after successful login
         router.push('../');
       } else {
-        // Handle error
         console.error('Login failed:', response.data.error);
       }
     } catch (error) {
       console.error('Error:', error);
-      setErrorLogin(error.response.data.error);
+      setErrorLogin(error.response?.data?.error || 'Login failed');
+    } finally {
+      setLoading(false); // Set loading to false when the login completes
     }
   };
 
@@ -112,6 +108,7 @@ export default function LoginView() {
         variant="contained"
         color="inherit"
         onClick={handleLogin}
+        loading={loading} // Set the loading state to the button
       >
         Login
       </LoadingButton>

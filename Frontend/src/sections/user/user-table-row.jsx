@@ -13,6 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import LoadingButton from '@mui/lab/LoadingButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -51,6 +52,9 @@ export default function UserTableRow({
   const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
   const [isConfirmationPaymentOpen, setConfirmationPaymentOpen] = useState(false);
 
+  const [loadingDelete, setLoadingDelete] = useState(false); // Loading state for delete
+  const [loadingActivate, setLoadingActivate] = useState(false); // Loading state for activate/deactivate
+
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -67,7 +71,7 @@ export default function UserTableRow({
   };
 
   const handleDelete = async () => {
-    setConfirmationOpen(false); // Close the confirmation dialog
+    setLoadingDelete(true);
     try {
       const token = localStorage.getItem('token');
 
@@ -83,17 +87,15 @@ export default function UserTableRow({
       console.log('User deleted successfully:', response.data);
     } catch (error) {
       console.error('Error deleting user:', error);
-
-      // Display error message or notification
-      // For example, you can use a state variable to store the error message and display it in your UI
-      // setError(error.message);
+    } finally {
+      setLoadingDelete(false);
+      setConfirmationOpen(false);
+      setOpen(null);
     }
-
-    setOpen(null);
   };
 
   const handleActivate = async () => {
-    setConfirmationActivateOpen(false);
+    setLoadingActivate(true);
     try {
       setOpen(null);
       const token = localStorage.getItem('token');
@@ -103,15 +105,18 @@ export default function UserTableRow({
         },
       });
       fetchUsers();
-
       console.log('User activated successfully:', response.data);
     } catch (error) {
       console.error('Error activating user:', error);
+    } finally {
+      setLoadingActivate(false);
+      setConfirmationActivateOpen(false);
+      setOpen(null);
     }
   };
 
   const handleDeactivate = async () => {
-    setConfirmationActivateOpen(false);
+    setLoadingActivate(true);
     try {
       setOpen(null);
       const token = localStorage.getItem('token');
@@ -121,10 +126,13 @@ export default function UserTableRow({
         },
       });
       fetchUsers();
-
       console.log('User deactivated successfully:', response.data);
     } catch (error) {
       console.error('Error deactivating user:', error);
+    } finally {
+      setLoadingActivate(false);
+      setConfirmationActivateOpen(false);
+      setOpen(null);
     }
   };
 
@@ -240,9 +248,14 @@ export default function UserTableRow({
           <Button onClick={() => setConfirmationOpen(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleDelete} color="error" autoFocus>
+          <LoadingButton
+            onClick={handleDelete}
+            color="error"
+            loading={loadingDelete}
+            autoFocus
+          >
             Delete
-          </Button>
+          </LoadingButton>
         </DialogActions>
       </Dialog>
 
@@ -254,7 +267,10 @@ export default function UserTableRow({
           status === 'active' ? 'deactivate' : 'activate'
         } ${name}?`}
         onConfirm={status === 'active' ? handleDeactivate : handleActivate}
+        loading={loadingActivate} // Pass loading state to dialog
       />
+
+    
 
       {/* Plan Dialog */}
 
