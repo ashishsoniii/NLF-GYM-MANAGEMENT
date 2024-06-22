@@ -2,22 +2,18 @@ import axios from 'axios';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import Stack from '@mui/material/Stack';
 import Dialog from '@mui/material/Dialog';
 // import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
-import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
 import EditPlanDialog from './email-edit-dialog';
@@ -42,9 +38,6 @@ export default function UserTableRow({
   const [isConfirmationEditOpen, setConfirmationEditOpen] = useState(false);
   const [isConfirmationActivateOpen, setConfirmationActivateOpen] = useState(false);
 
-  const handleOpenMenu = (event) => {
-    setOpen(event.currentTarget);
-  };
 
   const handleCloseMenu = () => {
     setOpen(null);

@@ -144,7 +144,7 @@ export default function EmailPage() {
         </Grid>
         <Grid xs={12} sm={6} md={3}>
           <AppWidgetSummary
-            total="New Plan"
+            total="Send Email"
             color="info"
             sx={{
               cursor: 'pointer',
@@ -152,7 +152,7 @@ export default function EmailPage() {
                 cursor: 'pointer', // Change cursor to pointer on hover
               },
             }}
-            onClick={() => handleCardClick('New Plan')}
+            onClick={() => handleCardClick('Send Email')}
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
           />
         </Grid>
@@ -225,7 +225,7 @@ export default function EmailPage() {
             />
           </>
         )}{' '}
-        {clickedTitle === 'New Plan' && (
+        {clickedTitle === 'Send Email' && (
           <>
             {/* add new pla n here */}
             <AddPlanForm setClickedTitle={setClickedTitle} />
