@@ -274,4 +274,124 @@ router.get('/members/mle-statistics', async (req, res) => {
 
 
 
+// Calculate income per month function
+const calculateIncomePerMonth = async (year) => {
+  try {
+    const aggregationPipeline = [
+      {
+        $match: {
+          "payments.date": {
+            $gte: new Date(`${year}-01-01`),
+            $lt: new Date(`${year + 1}-01-01`),
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$payments",
+          preserveNullAndEmptyArrays: true, // Preserve months with no payments
+        },
+      },
+      {
+        $group: {
+          _id: { month: { $month: "$payments.date" } },
+          totalIncome: { $sum: "$payments.amount" },
+        },
+      },
+      {
+        $sort: { "_id.month": 1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          label: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id.month", 1] }, then: "Jan" },
+                { case: { $eq: ["$_id.month", 2] }, then: "Feb" },
+                { case: { $eq: ["$_id.month", 3] }, then: "Mar" },
+                { case: { $eq: ["$_id.month", 4] }, then: "Apr" },
+                { case: { $eq: ["$_id.month", 5] }, then: "May" },
+                { case: { $eq: ["$_id.month", 6] }, then: "Jun" },
+                { case: { $eq: ["$_id.month", 7] }, then: "Jul" },
+                { case: { $eq: ["$_id.month", 8] }, then: "Aug" },
+                { case: { $eq: ["$_id.month", 9] }, then: "Sep" },
+                { case: { $eq: ["$_id.month", 10] }, then: "Oct" },
+                { case: { $eq: ["$_id.month", 11] }, then: "Nov" },
+                { case: { $eq: ["$_id.month", 12] }, then: "Dec" },
+              ],
+              default: "Unknown",
+            },
+          },
+          value: "$totalIncome",
+        },
+      },
+    ];
+
+    const result = await Member.aggregate(aggregationPipeline);
+
+    // Fill in missing months with zero income
+    const incomePerMonth = Array.from({ length: 12 }, (_, index) => {
+      const monthData = result.find((item) => item.label === getMonthLabel(index + 1));
+      return {
+        label: getMonthLabel(index + 1),
+        value: monthData ? monthData.value : 0,
+      };
+    });
+
+    return incomePerMonth;
+  } catch (error) {
+    console.error("Error calculating income per month:", error);
+    throw error;
+  }
+};
+
+// Helper function to get month label
+const getMonthLabel = (month) => {
+  switch (month) {
+    case 1:
+      return "Jan";
+    case 2:
+      return "Feb";
+    case 3:
+      return "Mar";
+    case 4:
+      return "Apr";
+    case 5:
+      return "May";
+    case 6:
+      return "Jun";
+    case 7:
+      return "Jul";
+    case 8:
+      return "Aug";
+    case 9:
+      return "Sep";
+    case 10:
+      return "Oct";
+    case 11:
+      return "Nov";
+    case 12:
+      return "Dec";
+    default:
+      return "Unknown";
+  }
+};
+
+// Endpoint to get income per month for a specific year
+router.get("/income/:year", async (req, res) => {
+  const year = parseInt(req.params.year);
+
+  try {
+    const incomePerMonth = await calculateIncomePerMonth(year);
+    res.json(incomePerMonth);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve income per month" });
+  }
+});
+
+
+
+
+
 module.exports = router;
