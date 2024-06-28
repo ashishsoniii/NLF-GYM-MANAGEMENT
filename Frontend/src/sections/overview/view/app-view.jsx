@@ -16,10 +16,31 @@ export default function AppView() {
     series: [],
   });
   const [mleStatistics, setMleStatistics] = useState([]);
+  const [gymStatistics, setGymStatistics] = useState(null);
+  console.log(gymStatistics);
+  console.log(gymStatistics);
+  console.log(gymStatistics);
+  console.log(gymStatistics);
 
   const [incomeData, setIncomeData] = useState([]);
   const year = 2024; // Replace with dynamic year if needed
 
+  useEffect(() => {
+    const fetchStatsCard = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/stat/statistics`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setGymStatistics(data);
+      } catch (error) {
+        console.error('Error fetching income data:', error);
+      }
+    };
+
+    fetchStatsCard();
+  }, [year]);
   useEffect(() => {
     const fetchIncomeData = async () => {
       try {
@@ -71,39 +92,45 @@ export default function AppView() {
 
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>
-          <AppWidgetSummary
-            title="Current Income"
-            total={714000}
-            color="success"
-            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
-          />
+          {gymStatistics && (
+            <AppWidgetSummary
+              title="Current Income"
+              total={gymStatistics.currentMonthIncome}
+              color="success"
+              icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
+            />
+          )}
         </Grid>
 
         <Grid xs={12} sm={6} md={3}>
-          <AppWidgetSummary
-            title="Joined This Month"
-            total={1352831}
-            color="info"
-            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
-          />
+          {gymStatistics && (
+            <AppWidgetSummary
+              title="Joined This Month"
+              total={gymStatistics.joinedThisMonthCount}
+              color="info"
+              icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
+            />
+          )}
         </Grid>
 
         <Grid xs={12} sm={6} md={3}>
-          <AppWidgetSummary
-            title="Total Members"
-            total={1723315}
+         {gymStatistics &&  <AppWidgetSummary
+            title="Active Members"
+            total={gymStatistics.activeMembersCount}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
-          />
+          />}
         </Grid>
 
         <Grid xs={12} sm={6} md={3}>
-          <AppWidgetSummary
-            title="Total Plans"
-            total={234}
-            color="error"
-            icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
-          />
+          {gymStatistics && (
+            <AppWidgetSummary
+              title="Total Plans"
+              total={gymStatistics.totalPlansCount}
+              color="error"
+              icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
+            />
+          )}
         </Grid>
 
         <Grid xs={12} md={6} lg={8}>
