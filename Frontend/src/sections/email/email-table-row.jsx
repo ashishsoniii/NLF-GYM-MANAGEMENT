@@ -18,7 +18,7 @@ export default function UserTableRow({
         <TableCell>{email.emailTo}</TableCell>
         <TableCell>{email.subject}</TableCell>
 
-        <TableCell align="center">{email.sentAt}</TableCell>
+        <TableCell align="center">{ new Date(email.sentAt).toISOString().slice(0, 10).split('T')[0]}</TableCell>
       </TableRow>
       {/* k */}
     </>

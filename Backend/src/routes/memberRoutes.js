@@ -142,6 +142,13 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
       const errors = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({ error: errors.join(", ") });
     }
+    if (error.code === 11000) {
+      const duplicateKey = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        error: `Duplicate key error: The ${duplicateKey} '${error.keyValue[duplicateKey]}' is already in use.`,
+      });
+    }
+
 
     res.status(500).json({ error: "Internal server error" });
   }
