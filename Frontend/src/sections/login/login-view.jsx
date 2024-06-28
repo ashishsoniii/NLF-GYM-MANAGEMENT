@@ -19,27 +19,26 @@ import { bgGradient } from 'src/theme/css';
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
-
-export default function LoginView() {
+export default function AuthView() {
   const theme = useTheme();
-
   const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorLogin, setErrorLogin] = useState(null);
-  const [loading, setLoading] = useState(false); // State to track loading
-
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleLogin = async () => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const response = await axios.post('http://localhost:3001/auth/adminLogin', {
         email,
         password,
       });
-
       if (response.status === 200) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('email', response.data.email);
@@ -49,15 +48,40 @@ export default function LoginView() {
       } else {
         console.error('Login failed:', response.data.error);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setErrorLogin(error.response?.data?.error || 'Login failed');
+    } catch (errorz) {
+      console.error('Error:', errorz);
+      setError(errorz.response?.data?.error || 'Login failed');
     } finally {
-      setLoading(false); // Set loading to false when the login completes
+      setLoading(false);
     }
   };
 
-  const renderForm = (
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:3001/auth/adminRegistration', {
+        name,
+        email,
+        password,
+        specialization: 'Admin Specialization',
+        commissionRate: 100,
+        phone,
+      });
+      if (response.status === 201) {
+        setError('You are Registered Successfully, Please Login!');
+        router.push('/login');
+      } else {
+        console.error('Registration failed:', response.data.error);
+      }
+    } catch (errorz) {
+      console.error('Error:', errorz);
+      setError(errorz.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderLoginForm = (
     <>
       <Stack spacing={3}>
         <TextField
@@ -66,7 +90,6 @@ export default function LoginView() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-
         <TextField
           name="password"
           label="Password"
@@ -84,15 +107,14 @@ export default function LoginView() {
           }}
         />
       </Stack>
-
-      {errorLogin && (
+      {error && (
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="flex-start"
           sx={{ my: 0, color: 'red' }}
         >
-          <p>{errorLogin}</p>
+          <p>{error}</p>
         </Stack>
       )}
       <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
@@ -100,7 +122,6 @@ export default function LoginView() {
           Forgot password?
         </Link>
       </Stack>
-
       <LoadingButton
         fullWidth
         size="large"
@@ -108,10 +129,102 @@ export default function LoginView() {
         variant="contained"
         color="inherit"
         onClick={handleLogin}
-        loading={loading} // Set the loading state to the button
+        loading={loading}
       >
         Login
       </LoadingButton>
+      <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mt: 2 }}>
+        <Typography variant="body2">
+          Dont have an account?
+          <Link
+            variant="subtitle2"
+            onClick={() => {
+              setIsLogin(false);
+              setError(null);
+            }}
+            sx={{ cursor: 'pointer' }}
+          >
+            Register
+          </Link>
+        </Typography>
+      </Stack>
+    </>
+  );
+
+  const renderRegisterForm = (
+    <>
+      <Stack spacing={3} py={3}>
+        <TextField
+          name="name"
+          label="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          name="email"
+          label="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          name="password"
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          name="phone"
+          label="Phone Number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </Stack>
+      {error && (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="flex-start"
+          sx={{ my: 0, color: 'red' }}
+        >
+          <p>{error}</p>
+        </Stack>
+      )}
+      <LoadingButton
+        fullWidth
+        size="large"
+        type="submit"
+        variant="contained"
+        color="inherit"
+        onClick={handleRegister}
+        loading={loading}
+      >
+        Register
+      </LoadingButton>
+      <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mt: 2 }}>
+        <Typography variant="body2">
+          Already have an account?{' '}
+          <Link
+            variant="subtitle2"
+            onClick={() => {
+              setIsLogin(true);
+              setError(null);
+            }}
+            sx={{ cursor: 'pointer' }}
+          >
+            Login
+          </Link>
+        </Typography>
+      </Stack>
     </>
   );
 
@@ -132,7 +245,6 @@ export default function LoginView() {
           left: { xs: 16, md: 24 },
         }}
       />
-
       <Stack alignItems="center" justifyContent="center" sx={{ height: 1 }}>
         <Card
           sx={{
@@ -142,15 +254,10 @@ export default function LoginView() {
           }}
         >
           <Typography variant="h4">Welcome to GYM</Typography>
-
-          <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
-            Admin Login?
-            <Link variant="subtitle2" sx={{ ml: 0.5 }}>
-              Click Here
-            </Link>
+          <Typography variant="body2" sx={{ mt: 2, mb: 2 }}>
+            {isLogin ? 'Admin Login' : 'Register for an account'}
           </Typography>
-
-          {renderForm}
+          {isLogin ? renderLoginForm : renderRegisterForm}
         </Card>
       </Stack>
     </Box>
