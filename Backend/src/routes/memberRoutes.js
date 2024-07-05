@@ -86,6 +86,7 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
     });
 
     // Save the new member to the database
+    const savedMember = await newMember.save();
 
     // Prepare email content
     const subject = "Welcome to the Gym!";
@@ -130,8 +131,7 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
 
     // Save email record
     await saveEmailRecord(newMember.name, subject, email);
-
-    const savedMember = await newMember.save();
+    
     res
       .status(201)
       .json({ message: "Member added successfully", member: savedMember });
