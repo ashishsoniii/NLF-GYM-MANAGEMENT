@@ -5,6 +5,8 @@ const planRoutes = require("./routes/planRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const statisticsRoutes = require("./routes/statisticsRoutes");
 
+require('dotenv').config();
+
 var cors = require("cors");
 
 const app = express();
