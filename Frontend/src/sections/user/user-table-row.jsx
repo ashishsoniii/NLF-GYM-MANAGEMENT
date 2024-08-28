@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import Stack from '@mui/material/Stack';
@@ -25,6 +25,26 @@ import UserEditDialog from './user-edit-dialog';
 import UserPaymentDialog from './user-payment-dialog';
 
 // ----------------------------------------------------------------------
+
+
+const bufferToBase64 = (buffer) => {
+  if (!buffer || !buffer.data || buffer.data.length === 0) {
+    console.error('Buffer is empty or invalid.');
+    return ''; // or return a default placeholder image URL
+  }
+
+  try {
+    const uint8Array = new Uint8Array(buffer.data);
+    const base64String = btoa(String.fromCharCode(...uint8Array));
+    return `data:image/jpeg;base64,${base64String}`;
+  } catch (error) {
+    console.error('Error converting buffer to base64:', error);
+    return ''; // or return a default placeholder image URL
+  }
+};
+
+
+
 
 export default function UserTableRow({
   selected,
@@ -54,10 +74,20 @@ export default function UserTableRow({
 
   const [loadingDelete, setLoadingDelete] = useState(false); // Loading state for delete
   const [loadingActivate, setLoadingActivate] = useState(false); // Loading state for activate/deactivate
+  const [imageSrc, setImageSrc] = useState('');
+
+  useEffect(() => {
+    if (avatarUrl) {
+      // Convert buffer data to base64 and set it to state
+      const base64String = bufferToBase64(avatarUrl);
+      setImageSrc(base64String);
+    }
+  }, [avatarUrl]);
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
+
 
   const handleDetailMenu = (event) => {
     setOpen(null);
@@ -145,7 +175,7 @@ export default function UserTableRow({
 
         <TableCell component="th" scope="row" padding="none">
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Avatar alt={name} src={avatarUrl} />
+          <Avatar alt={name} src={imageSrc} />
             <Typography
               sx={{ cursor: 'pointer' }}
               onClick={handleDetailMenu}

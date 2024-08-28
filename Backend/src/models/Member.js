@@ -43,7 +43,7 @@ const memberSchema = new mongoose.Schema({
   },
   isActive: { type: Boolean, default: true },
   notes: String,
-  profileImage: { type: Buffer }, 
+  profileImage: Buffer, 
 });
 
 module.exports = mongoose.model("Member", memberSchema);

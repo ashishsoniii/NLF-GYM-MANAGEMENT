@@ -5,17 +5,51 @@ import {
   Box,
   Card,
   Avatar,
-  // Button,
-  // Divider,
+  Button,
+  Divider,
   Typography,
   CardContent,
-  // CardActions,
+  CardActions,
 } from '@mui/material';
 
+const bufferToBase64 = (buffer) => {
+  if (!buffer || !buffer.data || buffer.data.length === 0) {
+    console.error('Buffer is empty or invalid.');
+    return ''; // or return a default placeholder image URL
+  }
+
+  try {
+    const uint8Array = new Uint8Array(buffer.data);
+    const base64String = btoa(String.fromCharCode(...uint8Array));
+    return `data:image/jpeg;base64,${base64String}`;
+  } catch (error) {
+    console.error('Error converting buffer to base64:', error);
+    return ''; // or return a default placeholder image URL
+  }
+};
+
+
+
+
+
 export const AccountProfile = ({ curentUser }) => {
+
+
+  const [imageSrc, setImageSrc] = useState('');
+
+  useEffect(() => {
+    if (curentUser.profileImage) {
+      // Convert buffer data to base64 and set it to state
+      const base64String = bufferToBase64(curentUser.profileImage);
+      setImageSrc(base64String);
+    }
+  }, [curentUser.profileImage]);
+
   // We'll keep user data in state to update it once we can access the window object.
   const [user, setUser] = useState({
-    avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+    avatar: curentUser.profileImage, // Default avatar path
+    //     avatar: curentUser.profileImage || '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+
     city: curentUser.phone,
     country: 'USA',
     jobTitle: 'Senior Developer',
@@ -25,37 +59,21 @@ export const AccountProfile = ({ curentUser }) => {
 
   useEffect(() => {
     setUser({
-      avatar: '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+      avatar: curentUser.profileImage, // Default avatar path
+      //     avatar: curentUser.profileImage || '/assets/images/avatars/avatar_1.jpg', // Default avatar path
+  
       city: curentUser.phone,
       country: 'USA',
       jobTitle: 'Senior Developer',
       name: curentUser.name, // Placeholder for name until we fetch data
-      timezone: 'GTM-7',
-    });
+      timezone: 'GMT-5:30',
+      });
   }, [curentUser]);
-
-  // useEffect will run this code once the component is mounted in the client (where window is defined).
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     const storedUserData = window.sessionStorage.getItem("user");
-  //     if (storedUserData) {
-  //       const userData = JSON.parse(storedUserData);
-  //       // Now we can safely access userData and update the state.
-  //       setUser((prevUser) => ({
-  //         ...prevUser,
-  //         name: userData.name, // assuming 'name' is a property of your stored user object
-  //         email: userData.email, // assuming 'name' is a property of your stored user object
-  //         lastLogin : userData.lastLogin ? new Date(userData.lastLogin).toLocaleDateString() : 'Never'
-
-  //         // You can add any other properties from userData that you need.
-  //       }));
-  //     }
-  //   }
-  // }, []); // Empty dependency array means this useEffect runs once when component is mounted.
 
   return (
     <Card>
       <CardContent>
+      
         <Box
           sx={{
             alignItems: 'center',
@@ -64,7 +82,7 @@ export const AccountProfile = ({ curentUser }) => {
           }}
         >
           <Avatar
-            src={user.avatar}
+            src={imageSrc}
             sx={{
               height: 80,
               mb: 2,
@@ -82,12 +100,12 @@ export const AccountProfile = ({ curentUser }) => {
           </Typography>
         </Box>
       </CardContent>
-      {/* <Divider />
+      <Divider />
       <CardActions>
         <Button fullWidth variant="text">
           Upload picture
         </Button>
-      </CardActions> */}
+      </CardActions>
     </Card>
   );
 };

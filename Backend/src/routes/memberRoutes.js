@@ -80,19 +80,37 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
     } = req.body;
 
         // Check if an image was uploaded
-        let profileImage;
+        let profileImage = null;
         if (req.file) {
+          console.log("imgggguyhgh")
           // Resize the image using sharp to reduce size and convert to PNG
           profileImage = await sharp(req.file.buffer)
             .resize({ width: 200, height: 200 }) // Set desired width and height
             .png()
             .toBuffer();
         }
+
+            // Parse the payments field if it's a JSON string
+    let parsedPayments = [];
+    if (payments) {
+      try {
+        parsedPayments = JSON.parse(payments);
+        // Ensure it's an array of objects
+        if (!Array.isArray(parsedPayments)) {
+          throw new Error('Payments should be an array');
+        }
+      } catch (error) {
+        console.error("Invalid payments data format", error);
+        return res.status(400).json({ error: "Invalid payments data format" });
+      }
+    }
+
     
 
     // Create a new member object
     const newMember = new Member({
       name,
+      profileImage,
       email,
       phone,
       address,
@@ -104,12 +122,11 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       expiryDate,
       latestPlanName,
       latestPaymentDate,
-      payments,
+      payments: parsedPayments,
       assignedTrainer,
       workoutType,
       isActive,
       notes,
-      profileImage,
     });
 
     // Save the new member to the database

@@ -28,6 +28,7 @@ export default function NewUserForm({ setClickedTitle }) {
     workoutType: 'Fitness',
     isActive: true,
     notes: '',
+    profileImage: null,  
   });
 
   const [plans, setPlans] = useState([]);
@@ -51,8 +52,12 @@ export default function NewUserForm({ setClickedTitle }) {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setUserData({ ...userData, profileImage: files[0] });
+    } else {
+      setUserData({ ...userData, [name]: value });
+    }
   };
 
   const calculateExpiryDate = (joiningDate, durationInMonths) => {
@@ -152,13 +157,45 @@ export default function NewUserForm({ setClickedTitle }) {
 
     try {
       const token = localStorage.getItem('token');
-      console.log(userData);
-      console.log(userData);
-      const response = await axios.post('http://localhost:3001/member/add', userData, {
+
+      const formData = new FormData();
+
+      
+      Object.keys(userData).forEach((key) => {
+        if (userData[key] !== null) {
+          if (typeof userData[key] === 'object' && key === 'profileImage') {
+            // Append file directly
+            formData.append(key, userData[key]);
+          } else if (typeof userData[key] === 'object') {
+            // Convert other objects or arrays to JSON strings
+            formData.append(key, JSON.stringify(userData[key]));
+          } else {
+            formData.append(key, userData[key]);
+          }
+        }
+      });
+
+      console.log("Oi'm here")
+      console.log(formData)
+      const response = await axios.post('http://localhost:3001/member/add', formData, {
         headers: {
           Authorization: token,
+          'Content-Type': 'multipart/form-data',
         },
       });
+
+
+
+
+
+
+      // console.log(userData);
+      // console.log(userData);
+      // const response = await axios.post('http://localhost:3001/member/add', userData, {
+      //   headers: {
+      //     Authorization: token,
+      //   },
+      // });
       console.log(userData);
       console.log(userData);
       console.log('User added successfully:', response.data);
@@ -322,6 +359,18 @@ export default function NewUserForm({ setClickedTitle }) {
           sx={{ mb: 2 }}
         />
       </Grid>
+      <Grid item xs={12} sm={6} md={6}>
+        <Typography variant="body2" gutterBottom>Upload Profile Image</Typography>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          name="profileImage"
+        />
+      </Grid>
+
+
 
       {/* Add more fields (joiningDate, expiryDate, latestPaymentDate, etc.) as needed */}
       <Grid item xs={12} sm={6} md={3} mx={3}>

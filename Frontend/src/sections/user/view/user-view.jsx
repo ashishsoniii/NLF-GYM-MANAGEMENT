@@ -353,7 +353,7 @@ export default function UserPage() {
                           currentDataRow={row}
                           company={row.company}
                           setcurentUser={setcurentUser}
-                          avatarUrl={row.avatarUrl}
+                          avatarUrl={row.profileImage}
                           status={row.isActive ? 'active' : 'deactivate'}
                           isVerified={row.isActive}
                           selected={selected.indexOf(row._id) !== -1}
