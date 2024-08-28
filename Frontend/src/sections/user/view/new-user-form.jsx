@@ -390,3 +390,359 @@ export default function NewUserForm({ setClickedTitle }) {
 NewUserForm.propTypes = {
   setClickedTitle: PropTypes.func,
 };
+
+
+
+/*
+import axios from 'axios';
+import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
+import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+
+export default function NewUserForm({ setClickedTitle }) {
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    membershipPlan: '',
+    dateOfBirth: new Date().toISOString().slice(0, 10),
+    gender: '',
+    latestPlanName: '',
+    duration: 0,
+    joiningDate: new Date().toISOString().slice(0, 10),
+    expiryDate: new Date().toISOString().slice(0, 10),
+    latestPaymentDate: new Date().toISOString().slice(0, 10),
+    payments: [],
+    assignedTrainer: '6629ead5ebdf400ddbea7688',
+    workoutType: 'Fitness',
+    isActive: true,
+    notes: '',
+    profileImage: null,
+  });
+
+  const [plans, setPlans] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/plan/active');
+      setPlans(response.data);
+    } catch (errors) {
+      console.error('Error fetching plans:', errors);
+      setError('Error fetching plans');
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setUserData({ ...userData, profileImage: files[0] });
+    } else {
+      setUserData({ ...userData, [name]: value });
+    }
+  };
+
+  const calculateExpiryDate = (joiningDate, durationInMonths) => {
+    const calculatedExpiry = new Date(joiningDate);
+    calculatedExpiry.setMonth(calculatedExpiry.getMonth() + durationInMonths);
+    return calculatedExpiry.toISOString().split('T')[0];
+  };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target;
+
+    if (userData.membershipPlan) {
+      const currentSelectedPlan = plans.find((plan) => plan._id === userData.membershipPlan);
+      const durationInMonths = currentSelectedPlan.duration;
+
+      setUserData({
+        ...userData,
+        [name]: value,
+        expiryDate: calculateExpiryDate(new Date(value), durationInMonths),
+      });
+    } else {
+      console.error('No plan selected');
+      setError('Please select a membership plan first');
+    }
+  };
+
+  const handlePlanChange = (e) => {
+    const { value } = e.target;
+    const currentSelectedPlan = plans.find((plan) => plan._id === value);
+
+    if (currentSelectedPlan) {
+      setSelectedPlan(currentSelectedPlan);
+
+      const formattedJoiningDate = userData.joiningDate.split('T')[0];
+      const expiryDateUpdate = calculateExpiryDate(
+        new Date(formattedJoiningDate),
+        currentSelectedPlan.duration
+      );
+
+      const payments = [
+        {
+          amount: currentSelectedPlan.price,
+          date: new Date(),
+          paymentMethod: 'Cash',
+          joiningDate: userData.joiningDate,
+          expiryDate: expiryDateUpdate,
+          plan: {
+            planId: currentSelectedPlan._id,
+            name: currentSelectedPlan.name,
+            duration: currentSelectedPlan.duration,
+            price: currentSelectedPlan.price,
+          },
+        },
+      ];
+
+      setUserData({
+        ...userData,
+        membershipPlan: value,
+        duration: currentSelectedPlan.duration,
+        latestPaymentAmount: currentSelectedPlan.price,
+        expiryDate: expiryDateUpdate,
+        latestPlanName: currentSelectedPlan.name,
+        payments,
+      });
+    } else {
+      console.error('Selected plan not found');
+      setError('Selected plan not found');
+    }
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+
+      Object.keys(userData).forEach((key) => {
+        if (userData[key] !== null) {
+          if (key === 'profileImage') {
+            formData.append(key, userData[key]);
+          } else if (typeof userData[key] === 'object') {
+            formData.append(key, JSON.stringify(userData[key]));
+          } else {
+            formData.append(key, userData[key]);
+          }
+        }
+      });
+
+      const response = await axios.post('http://localhost:3001/member/add', formData, {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setUserData({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        membershipPlan: '',
+        dateOfBirth: new Date().toISOString().slice(0, 10),
+        gender: '',
+        latestPlanName: '',
+        joiningDate: new Date().toISOString().slice(0, 10),
+        expiryDate: new Date().toISOString().slice(0, 10),
+        latestPaymentDate: new Date().toISOString().slice(0, 10),
+        payments: [],
+        assignedTrainer: '6629ead5ebdf400ddbea7688',
+        workoutType: 'Fitness',
+        isActive: true,
+        notes: '',
+        duration: 0,
+      });
+      setSelectedPlan(null);
+      setError('User Added Successfully');
+      setClickedTitle('All Users');
+    } catch (errors) {
+      console.error('Error adding user:', errors);
+      setError(errors.response.data.error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Grid container spacing={2} m={3}>
+      <Grid item xs={12}>
+        <Typography variant="h5" gutterBottom>
+          Add New User
+        </Typography>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Name"
+          variant="outlined"
+          fullWidth
+          name="name"
+          value={userData.name}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Email"
+          variant="outlined"
+          fullWidth
+          name="email"
+          value={userData.email}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Phone"
+          variant="outlined"
+          fullWidth
+          name="phone"
+          value={userData.phone}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Address"
+          variant="outlined"
+          fullWidth
+          name="address"
+          value={userData.address}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Date of Birth"
+          variant="outlined"
+          type="date"
+          fullWidth
+          name="dateOfBirth"
+          value={userData.dateOfBirth}
+          onChange={handleDateChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          select
+          label="Gender"
+          variant="outlined"
+          fullWidth
+          name="gender"
+          value={userData.gender}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+        >
+          <MenuItem value="Male">Male</MenuItem>
+          <MenuItem value="Female">Female</MenuItem>
+          <MenuItem value="Other">Other</MenuItem>
+        </TextField>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          select
+          label="Select Plan"
+          variant="outlined"
+          fullWidth
+          name="membershipPlan"
+          value={userData.membershipPlan}
+          onChange={(e) => {
+            handleChange(e);
+            handlePlanChange(e);
+          }}
+          sx={{ mb: 2 }}
+        >
+          {plans.map((plan) => (
+            <MenuItem key={plan._id} value={plan._id}>
+              {plan.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        {selectedPlan && (
+          <Typography variant="body1" mx={2}>
+            <strong>Name:</strong> {selectedPlan.name}, <strong>Duration:</strong>{' '}
+            {selectedPlan.duration} months, <strong>Price:</strong> ₹{selectedPlan.price}
+          </Typography>
+        )}
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Joining Date"
+          variant="outlined"
+          type="date"
+          fullWidth
+          name="joiningDate"
+          value={userData.joiningDate}
+          onChange={handleDateChange}
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Expiry Date"
+          variant="outlined"
+          type="date"
+          fullWidth
+          name="expiryDate"
+          value={userData.expiryDate}
+          readOnly
+          sx={{ mb: 2 }}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <input
+          type="file"
+          name="profileImage"
+          accept="image/*"
+          onChange={handleChange}
+          style={{ marginTop: '1em', display: 'block' }}
+        />
+        {userData.profileImage && (
+          <Box mt={2}>
+            <Typography variant="body2">Selected file: {userData.profileImage.name}</Typography>
+          </Box>
+        )}
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <LoadingButton
+          variant="contained"
+          onClick={handleSubmit}
+          loading={loading}
+          sx={{ mt: 2 }}
+        >
+          Submit
+        </LoadingButton>
+      </Grid>
+      {error && (
+        <Grid item xs={12}>
+          <Typography color="error">{error}</Typography>
+        </Grid>
+      )}
+    </Grid>
+  );
+}
+
+NewUserForm.propTypes = {
+  setClickedTitle: PropTypes.func.isRequired,
+};
+*/
