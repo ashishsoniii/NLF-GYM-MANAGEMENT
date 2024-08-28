@@ -373,7 +373,7 @@ export default function NewUserForm({ setClickedTitle }) {
 
 
       {/* Add more fields (joiningDate, expiryDate, latestPaymentDate, etc.) as needed */}
-      <Grid item xs={12} sm={6} md={3} mx={3}>
+      <Grid item xs={12} sm={6} md={3} mx={3} my={4}>
         <LoadingButton variant="contained" color="primary" onClick={handleSubmit} loading={loading}>
           Add User
         </LoadingButton>
