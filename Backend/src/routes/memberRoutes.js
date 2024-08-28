@@ -9,6 +9,9 @@ const { newUser } = require("./emailTemplates/newUser");
 const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
 const puppeteer = require("puppeteer");
 const Email = require("../models/Email"); // Import the Email model
+const sharp = require("sharp");
+const upload = require("../middleware/multer");
+
 
 async function saveEmailRecord(userId, subject, emailContent) {
   const emailRecord = new Email({
@@ -39,8 +42,20 @@ async function generatePDFfromHTML(htmlContent) {
   }
 }
 
+// Error handling middleware for multer
+router.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({ error: error.message });
+  } else if (error) {
+    return res.status(500).json({ error: "An error occurred while uploading the image." });
+  }
+  next();
+});
+
+
+
 // Route to add a new member by an admin
-router.post("/add", adminAuthMiddleware, async (req, res) => {
+router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (req, res) => {
   try {
     // Extract member data from request body
     const {
@@ -64,6 +79,17 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
       notes,
     } = req.body;
 
+        // Check if an image was uploaded
+        let profileImage;
+        if (req.file) {
+          // Resize the image using sharp to reduce size and convert to PNG
+          profileImage = await sharp(req.file.buffer)
+            .resize({ width: 200, height: 200 }) // Set desired width and height
+            .png()
+            .toBuffer();
+        }
+    
+
     // Create a new member object
     const newMember = new Member({
       name,
@@ -83,6 +109,7 @@ router.post("/add", adminAuthMiddleware, async (req, res) => {
       workoutType,
       isActive,
       notes,
+      profileImage,
     });
 
     // Save the new member to the database
