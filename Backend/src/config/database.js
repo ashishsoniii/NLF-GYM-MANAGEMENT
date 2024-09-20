@@ -1,27 +1,22 @@
-// src/config/database.js
+const mongoose = require('mongoose');
+require('dotenv').config(); // Load environment variables from .env file
 
-const mongoose = require("mongoose");
+const mongoURI = process.env.MONGO_URI;
 
-// Define the MongoDB connection URI (replace 'test' with your database name)
-const mongoURI = "mongodb://127.0.0.1:27017/gym";
+async function connectToDatabase() {
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw error; 
+  }
+}
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const db = mongoose.connection;
-
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-db.once("open", () => {
-  console.log("Connected to MongoDB");
-});
-
-// Define your Mongoose models and schema here
-const Cat = mongoose.model("Cat", { name: String });
-
-// Export your models or connection for use in other parts of your app
 module.exports = {
-  Cat,
-  mongoose, // You can also export the mongoose instance if needed
+  mongoose,
+  connectToDatabase,
 };
