@@ -39,7 +39,7 @@ const AccountPasswordChange = ({ userID }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:3001/auth/changePassword',
+        `${import.meta.env.VITE_BACKEND_URL}/auth/changePassword`,
         {
           userID,
           oldPassword,

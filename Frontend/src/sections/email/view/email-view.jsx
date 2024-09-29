@@ -56,7 +56,7 @@ export default function EmailPage() {
   const fetchPlans = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3001/member/emails', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/member/emails`, {
         headers: {
           Authorization: `${token}`,
         },

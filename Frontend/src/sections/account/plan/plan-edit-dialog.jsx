@@ -42,7 +42,7 @@ function EditPlanDialog({
       const token = localStorage.getItem('token');
 
       // Send PUT request to edit the plan
-      const response = await axios.put(`http://localhost:3001/plan/${id}`, planData, {
+      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}`, planData, {
         headers: {
           Authorization: `${token}`,
         },

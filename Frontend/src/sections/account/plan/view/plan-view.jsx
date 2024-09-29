@@ -52,7 +52,7 @@ export default function PlanPage({payments}) {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/plan'); // Replace with your API endpoint
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/plan`); // Replace with your API endpoint
       setPlans(response.data);
       console.log('Error fetcaing plans:', response.data);
     } catch (error) {

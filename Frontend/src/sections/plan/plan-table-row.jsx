@@ -58,7 +58,7 @@ export default function UserTableRow({
       const token = localStorage.getItem('token');
 
       // Send DELETE request to delete the plan
-      const response = await axios.delete(`http://localhost:3001/plan/${id}`, {
+      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}`, {
         headers: {
           Authorization: `${token}`, // Include the token in the Authorization header
         },
@@ -83,7 +83,7 @@ export default function UserTableRow({
     try {
       setOpen(null);
       const token = localStorage.getItem('token');
-      const response = await axios.patch(`http://localhost:3001/plan/${id}/activate`, null, {
+      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}/activate`, null, {
         headers: {
           Authorization: token,
         },
@@ -101,7 +101,7 @@ export default function UserTableRow({
     try {
       setOpen(null);
       const token = localStorage.getItem('token');
-      const response = await axios.patch(`http://localhost:3001/plan/${id}/deactivate`, null, {
+      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}/deactivate`, null, {
         headers: {
           Authorization: token,
         },

@@ -43,7 +43,7 @@ export default function NewUserForm({ setClickedTitle }) {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/plan/active');
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/plan/active`);
       setPlans(response.data);
     } catch (errors) {
       console.error('Error fetching plans:', errors);
@@ -186,7 +186,7 @@ export default function NewUserForm({ setClickedTitle }) {
 
       console.log("Oi'm here")
       console.log(formData)
-      const response = await axios.post('http://localhost:3001/member/add', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/add`, formData, {
         headers: {
           Authorization: token,
           'Content-Type': 'multipart/form-data',

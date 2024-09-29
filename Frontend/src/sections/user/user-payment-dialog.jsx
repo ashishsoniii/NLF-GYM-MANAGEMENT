@@ -43,7 +43,7 @@ function UserPaymentDialog({
   const fetchPlans = async () => {
 
     try {
-      const response = await axios.get('http://localhost:3001/plan/active');
+      const response = await axios.get( `${import.meta.env.VITE_BACKEND_URL}/plan/active`);
       setPlans(response.data);
     } catch (error) {
       console.error('Error fetching plans:', error);
@@ -123,7 +123,7 @@ function UserPaymentDialog({
         expiryDate: userData.expiryDate,
       };
 
-      await axios.post(`http://localhost:3001/member/addPayment/${id}`, paymentData, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/addPayment/${id}`, paymentData, {
         headers: {
           Authorization: `${token}`,
         },

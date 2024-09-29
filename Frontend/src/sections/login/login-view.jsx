@@ -35,7 +35,7 @@ export default function AuthView() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/auth/adminLogin', {
+      const response = await axios.post('https://nlfgymback-fnbebqhpgkemhwft.centralindia-01.azurewebsites.net/auth/adminLogin', {
         email,
         password,
       });
@@ -59,7 +59,7 @@ export default function AuthView() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/auth/adminRegistration', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/adminRegistration`, {
         name,
         email,
         password,

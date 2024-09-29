@@ -44,7 +44,7 @@ function UserEditDialog({
       const token = localStorage.getItem('token');
 
       // Send PUT request to edit the user
-      const response = await axios.put(`http://localhost:3001/member/modify/${id}`, userData, {
+      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/member/modify/${id}`, userData, {
         headers: {
           Authorization: `${token}`,
         },

@@ -28,7 +28,7 @@ export default function AppView() {
   useEffect(() => {
     const fetchStatsCard = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/stat/statistics`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/stat/statistics`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -44,7 +44,7 @@ export default function AppView() {
   useEffect(() => {
     const fetchIncomeData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/stat/income/${year}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/stat/income/${year}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -61,7 +61,7 @@ export default function AppView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/stat/members/chart-data');
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/stat/members/chart-data`);
         setChartData(response.data);
       } catch (error) {
         console.error('Error fetching MLE statistics:', error);
@@ -74,7 +74,7 @@ export default function AppView() {
   useEffect(() => {
     const fetchDataMFStat = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/stat/members/mle-statistics');
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/stat/members/mle-statistics`);
         setMleStatistics(response.data.series);
       } catch (error) {
         console.error('Error fetching chart data:', error);

@@ -32,7 +32,7 @@ export default function AddPlanForm({ setClickedTitle }) {
       const token = localStorage.getItem('token');
 
       // Send POST request to add plan with authorization header
-      const response = await axios.post('http://localhost:3001/plan', planData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/plan`, planData, {
         headers: {
           Authorization: `${token}`, // Include the token in the Authorization header
         },

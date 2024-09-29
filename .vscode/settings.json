@@ -1,0 +1,9 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/ec667893-845c-4d7d-b925-fc6eb84378d9/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/nlfgym",
+    "appService.deploySubpath": "Frontend",
+    "appService.showBuildDuringDeployPrompt": false
+}

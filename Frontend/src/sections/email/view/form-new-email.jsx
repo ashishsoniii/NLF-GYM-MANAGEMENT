@@ -42,7 +42,7 @@ export default function SendEmailForm({ setClickedTitle }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3001/member/sendEmail', emailData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/sendEmail`, emailData, {
         headers: {
           Authorization: `${token}`,
         },

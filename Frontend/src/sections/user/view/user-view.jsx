@@ -77,7 +77,7 @@ export default function UserPage() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `http://localhost:3001/member/${clickedTitle}/${
+        `${import.meta.env.VITE_BACKEND_URL}/member/${clickedTitle}/${
           clickedTitle === 'expiredUser' ? selectExpiredFilter : ''
         }`,
         {
