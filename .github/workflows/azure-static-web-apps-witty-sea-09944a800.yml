@@ -42,7 +42,7 @@ jobs:
           ###### Repository/Build Configurations - Adjust based on your setup ######
           app_location: "/Frontend" # Path to the app
           api_location: "api" # Path to the API (optional)
-          output_location: "/Frontend/dist" # Path to the build output folder (e.g., dist or build)
+          output_location: "dist" # Path to the build output folder (e.g., dist or build)
           ###### End of Configurations ######
 
   close_pull_request_job:
