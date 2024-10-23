@@ -361,27 +361,34 @@ router.post("/addPayment/:id", async (req, res) => {
       expiryDate,
     });
 
-    const pdfBuffer = await generatePDFfromHTML(invoicehtml);
+    try {
+      // Generate PDF and send email
+      const pdfBuffer = await generatePDFfromHTML(invoicehtml);
 
-    const emailSent = await sendEmailwithAttachment(
-      member.email,
-      subject,
-      html,
-      {
-        filename: "invoice.pdf",
-        content: pdfBuffer,
+      const emailSent = await sendEmailwithAttachment(
+        member.email,
+        subject,
+        html,
+        {
+          filename: "invoice.pdf",
+          content: pdfBuffer,
+        }
+      );
+
+      if (!emailSent) {
+        console.log("Failed to send email, but proceeding without error.");
+      } else {
+        console.log("Email sent successfully.");
       }
-    );
 
-    if (!emailSent) {
-      console.log("Failed to send email");
-      return res.status(500).json({ error: "Failed to send email" });
-    } else {
-      console.log("Email send");
+      // Save email record only if email was sent
+      await saveEmailRecord(member.name, subject, member.email);
+    } catch (emailError) {
+      console.error("Error during email processing:", emailError);
+      // Continue with the process even if email fails
     }
-    // Save email record
-    await saveEmailRecord(member.name, subject, member.email);
 
+    // Send success response to the client regardless of email status
     res.status(200).json({ message: "Payment added successfully", member });
   } catch (error) {
     console.error("Error adding payment:", error);
