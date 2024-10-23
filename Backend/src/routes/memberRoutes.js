@@ -55,6 +55,7 @@ router.use((error, req, res, next) => {
 
 
 // Route to add a new member by an admin
+// Route to add a new member by an admin
 router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (req, res) => {
   try {
     // Extract member data from request body
@@ -79,25 +80,22 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       notes,
     } = req.body;
 
-        // Check if an image was uploaded
-        let profileImage = null;
-        if (req.file) {
-          console.log("imgggguyhgh")
-          // Resize the image using sharp to reduce size and convert to PNG
-          profileImage = await sharp(req.file.buffer)
-            .resize({ width: 200, height: 200 }) // Set desired width and height
-            .png()
-            .toBuffer();
-        }
+    // Check if an image was uploaded
+    let profileImage = null;
+    if (req.file) {
+      console.log("Image uploaded");
+      profileImage = await sharp(req.file.buffer)
+        .resize({ width: 200, height: 200 }) 
+        .png()
+        .toBuffer();
+    }
 
-            // Parse the payments field if it's a JSON string
     let parsedPayments = [];
     if (payments) {
       try {
         parsedPayments = JSON.parse(payments);
-        // Ensure it's an array of objects
         if (!Array.isArray(parsedPayments)) {
-          throw new Error('Payments should be an array');
+          throw new Error("Payments should be an array");
         }
       } catch (error) {
         console.error("Invalid payments data format", error);
@@ -105,9 +103,7 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       }
     }
 
-    
-
-    // Create a new member object
+    // Create and save the new member
     const newMember = new Member({
       name,
       profileImage,
@@ -129,13 +125,10 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       notes,
     });
 
-    // Save the new member to the database
     const savedMember = await newMember.save();
 
     // Prepare email content
     const subject = "Welcome to the Gym!";
-    // Send the email
-
     const html = newUser({
       name,
       email,
@@ -145,6 +138,7 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       joiningDate,
       expiryDate,
     });
+
     const invoicehtml = invoiceHTML({
       name,
       email,
@@ -157,42 +151,53 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       expiryDate,
     });
 
-    const pdfBuffer = await generatePDFfromHTML(invoicehtml);
-
-    // const emailSent = await sendEmail(email, subject, html);
-
-    const emailSent = await sendEmailwithAttachment(email, subject, html, {
-      filename: "invoice.pdf",
-      content: pdfBuffer,
-    });
-
-    if (!emailSent) {
-      console.log("Failed to send email & adding user");
-      return res
-        .status(500)
-        .json({ error: "Failed to send email & adding user" });
+    let pdfBuffer;
+    try {
+      // Generate PDF invoice from HTML
+      pdfBuffer = await generatePDFfromHTML(invoicehtml);
+    } catch (error) {
+      console.error("Error generating PDF, skipping email attachment:", error);
     }
 
-    // Save email record
+    // If PDF is generated, send it as an attachment; otherwise, send a basic email
+    let emailSent;
+    if (pdfBuffer) {
+      emailSent = await sendEmailwithAttachment(email, subject, html, {
+        filename: "invoice.pdf",
+        content: pdfBuffer,
+      });
+    } else {
+      emailSent = await sendEmail(email, subject, html);
+    }
+
+    if (!emailSent) {
+      console.log("Failed to send email but member added successfully.");
+      return res.status(201).json({
+        message: "Member added successfully, but there was an error sending the email.",
+        member: savedMember,
+      });
+    }
+
     await saveEmailRecord(newMember.name, subject, email);
-    
-    res
-      .status(201)
-      .json({ message: "Member added successfully", member: savedMember });
+
+    res.status(201).json({
+      message: "Member added and email sent successfully",
+      member: savedMember,
+    });
   } catch (error) {
     console.error("Error adding member:", error);
-
+    
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({ error: errors.join(", ") });
     }
+
     if (error.code === 11000) {
       const duplicateKey = Object.keys(error.keyPattern)[0];
       return res.status(400).json({
         error: `Duplicate key error: The ${duplicateKey} '${error.keyValue[duplicateKey]}' is already in use.`,
       });
     }
-
 
     res.status(500).json({ error: "Internal server error" });
   }
