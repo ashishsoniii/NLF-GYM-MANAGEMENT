@@ -32,12 +32,16 @@ export default function AuthView() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
 
-  const handleLogin = async () => {
+  // Combined login function
+  const handleLogin = async (autoLogin = false) => {
     setLoading(true);
+    const loginEmail = autoLogin ? 'soni@soni.com' : email;
+    const loginPassword = autoLogin ? 'admin123' : password;
+
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/adminLogin`, {
-        email,
-        password,
+        email: loginEmail,
+        password: loginPassword,
       });
       if (response.status === 200) {
         localStorage.setItem('token', response.data.token);
@@ -128,14 +132,26 @@ export default function AuthView() {
         type="submit"
         variant="contained"
         color="inherit"
-        onClick={handleLogin}
+        onClick={() => handleLogin(false)} // Regular login
         loading={loading}
       >
         Login
       </LoadingButton>
+      {/* Auto Login Button */}
+      <LoadingButton
+        fullWidth
+        size="large"
+        variant="outlined"
+        color="primary"
+        onClick={() => handleLogin(true)} // Auto login
+        loading={loading}
+        sx={{ mt: 2 }}
+      >
+        Skip Login
+      </LoadingButton>
       <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mt: 2 }}>
         <Typography variant="body2">
-          Dont have an account?
+          {`Don't have an account?`}
           <Link
             variant="subtitle2"
             onClick={() => {
@@ -254,8 +270,8 @@ export default function AuthView() {
           }}
         >
           <Typography variant="h4">Welcome to GYM</Typography>
-          <Typography variant="body2" sx={{ mt: 2, mb: 2 }}>
-            {isLogin ? 'Admin Login' : 'Register for an account'}
+          <Typography sx={{ mb: 5 }} variant="body2">
+            Please {isLogin ? 'login' : 'register'} to continue
           </Typography>
           {isLogin ? renderLoginForm : renderRegisterForm}
         </Card>
