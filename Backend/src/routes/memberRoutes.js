@@ -24,7 +24,7 @@ async function saveEmailRecord(userId, subject, emailContent) {
 
 async function generatePDFfromHTML(htmlContent) {
   const browser = await puppeteer.launch({
-    headless: false, // Keep headless false as per your requirement
+    headless: true, // Set to true to run in headless mode (no browser window)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     timeout: 60000, // Increase timeout to 60 seconds
   });

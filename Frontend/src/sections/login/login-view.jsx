@@ -35,7 +35,7 @@ export default function AuthView() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('https://nlfgymback-fnbebqhpgkemhwft.centralindia-01.azurewebsites.net/auth/adminLogin', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/adminLogin`, {
         email,
         password,
       });

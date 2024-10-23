@@ -39,7 +39,6 @@ const newUser = ({name,email,phone,latestPlanName, latestPaymentAmount,joiningDa
           <li><strong>Payment Amount:</strong> ${latestPaymentAmount} Rs.</li>
           <li><strong>Start Date:</strong>  ${joiningDate}</li>
           <li><strong>End Date:</strong>  ${expiryDate} </li>
-          <li><strong>Validity:</strong>  ${"validityP"} Months</li>
         </ul>
         <p>Your invoice is attached to this email!</p>
     
