@@ -20,6 +20,8 @@ import DialogActions from '@mui/material/DialogActions';
 import api from 'src/api/axios';
 
 import Label from 'src/components/label';
+import { fDateLong } from 'src/utils/format-time';
+
 import Iconify from 'src/components/iconify';
 
 import UserEditDialog from './user-edit-dialog';
@@ -159,8 +161,16 @@ export default function UserTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell>{new Date(joiningDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
-        <TableCell>{new Date(expiryDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
+        <TableCell>
+          <span title={fDateLong(joiningDate)}>
+            {new Date(joiningDate).toISOString().slice(0, 10).split('T')[0]}
+          </span>
+        </TableCell>
+        <TableCell>
+          <span title={fDateLong(expiryDate)}>
+            {new Date(expiryDate).toISOString().slice(0, 10).split('T')[0]}
+          </span>
+        </TableCell>
         <TableCell>{planName}</TableCell>
         <TableCell>{email}</TableCell>
         <TableCell>{phone}</TableCell>

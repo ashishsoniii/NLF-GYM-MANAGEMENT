@@ -23,7 +23,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 app.use("/auth", authRoutes);
 app.use("/plan", planRoutes);
@@ -55,6 +55,12 @@ app.use((err, req, res, next) => {
   if (err.message === "Not allowed by CORS") {
     return res.status(403).json({ error: "Origin not allowed" });
   }
+  if (err.status === 413 || err.message?.toLowerCase().includes("too large")) {
+    return res.status(413).json({ error: "Request body too large. Max 10MB." });
+  }
+  if (err.type === "entity.parse.failed" || err instanceof SyntaxError) {
+    return res.status(400).json({ error: "Invalid JSON in request body. Check for trailing commas or invalid syntax." });
+  }
   console.error("Unhandled error:", err);
-  res.status(500).json({ error: "An error occurred" });
+  res.status(err.status || 500).json({ error: err.message || "An error occurred" });
 });

@@ -28,6 +28,159 @@ router.post("/", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+// Bulk add plans by name, duration, price. Auth required.
+// POST /plan/bulk-add  body: { plans: [ { name, duration, price, description?, isActive? }, ... ] }
+router.post("/bulk-add", adminAuthMiddleware, async (req, res) => {
+  try {
+    const { plans: rawPlans } = req.body;
+    if (!Array.isArray(rawPlans) || rawPlans.length === 0) {
+      return res.status(400).json({
+        error: "Body must be { plans: [ { name, duration, price }, ... ] } with at least one plan",
+      });
+    }
+
+    const existing = await Plan.find().select("name").lean();
+    const existingNames = new Set(existing.map((p) => p.name.toLowerCase().trim()));
+
+    const toInsert = [];
+    const skipped = [];
+    const errors = [];
+
+    for (let i = 0; i < rawPlans.length; i += 1) {
+      const p = rawPlans[i];
+      const name = p.name != null ? String(p.name).trim() : null;
+      const duration = parseNumber(p.duration);
+      const price = parseNumber(p.price);
+
+      if (!name) {
+        errors.push({ index: i + 1, error: "Missing plan name" });
+        continue;
+      }
+      if (duration == null || duration < 1) {
+        errors.push({ index: i + 1, name, error: "duration must be a number >= 1" });
+        continue;
+      }
+      if (price == null || price < 0) {
+        errors.push({ index: i + 1, name, error: "price must be a number >= 0" });
+        continue;
+      }
+
+      const key = name.toLowerCase();
+      if (existingNames.has(key)) {
+        skipped.push({ index: i + 1, name });
+        continue;
+      }
+
+      existingNames.add(key);
+      toInsert.push({
+        name,
+        duration,
+        price,
+        description: p.description != null ? String(p.description).trim() : undefined,
+        isActive: p.isActive !== false,
+      });
+    }
+
+    if (toInsert.length === 0) {
+      return res.status(400).json({
+        message: "No new plans to insert (all skipped or invalid)",
+        skipped: skipped.length,
+        errors,
+      });
+    }
+
+    const created = await Plan.insertMany(toInsert);
+    return res.status(201).json({
+      message: `${created.length} plan(s) created, ${skipped.length} skipped (duplicate name), ${errors.length} invalid`,
+      inserted: created.length,
+      skipped: skipped.length,
+      errors,
+      plans: created,
+    });
+  } catch (error) {
+    console.error("Plan bulk-add error:", error);
+    return res.status(500).json({ error: error.message || "Bulk add failed" });
+  }
+});
+
+// Import plans from PHPMyAdmin JSON. Auth required.
+// POST /plan/import-phpmyadmin  body: <raw PHPMyAdmin array> or { data: array }
+// Extracts "plan" table: planName->name, validity->duration, amount->price, active->isActive
+router.post("/import-phpmyadmin", adminAuthMiddleware, async (req, res) => {
+  try {
+    const raw = req.body;
+    const arr = Array.isArray(raw) ? raw : raw?.data ?? null;
+    if (!Array.isArray(arr) || arr.length === 0) {
+      return res.status(400).json({
+        error: "Body must be the PHPMyAdmin JSON array or { data: [...] }",
+      });
+    }
+
+    const table = arr.find((item) => item?.type === "table" && item?.name === "plan");
+    const planRows = table?.data || [];
+
+    if (planRows.length === 0) {
+      return res.status(400).json({ error: "No 'plan' table found in the JSON" });
+    }
+
+    const existing = await Plan.find().select("name").lean();
+    const existingNames = new Set(existing.map((p) => p.name.toLowerCase().trim()));
+
+    const toInsert = [];
+    const skipped = [];
+
+    for (let i = 0; i < planRows.length; i += 1) {
+      const p = planRows[i];
+      const name = (p.planName != null ? String(p.planName).trim() : null) || (p.plan_name != null ? String(p.plan_name).trim() : null);
+      const duration = parseNumber(p.validity) ?? 1;
+      const price = parseNumber(p.amount) ?? 0;
+      const description = p.description != null ? String(p.description).trim() : undefined;
+      const isActive = String(p.active || "").toLowerCase() === "yes";
+
+      if (!name) continue;
+
+      const key = name.toLowerCase();
+      if (existingNames.has(key)) {
+        skipped.push({ name });
+        continue;
+      }
+
+      existingNames.add(key);
+      toInsert.push({
+        name,
+        duration: Math.max(1, duration),
+        price: Math.max(0, price),
+        description,
+        isActive,
+      });
+    }
+
+    if (toInsert.length === 0) {
+      return res.status(400).json({
+        message: "No new plans to insert (all already exist or invalid)",
+        skipped: skipped.length,
+      });
+    }
+
+    const created = await Plan.insertMany(toInsert);
+    return res.status(201).json({
+      message: `${created.length} plan(s) imported from PHPMyAdmin, ${skipped.length} skipped (duplicate name)`,
+      inserted: created.length,
+      skipped: skipped.length,
+      plans: created,
+    });
+  } catch (error) {
+    console.error("Plan import-phpmyadmin error:", error);
+    return res.status(500).json({ error: error.message || "Import failed" });
+  }
+});
+
+function parseNumber(val) {
+  if (val == null) return null;
+  const n = Number(val);
+  return Number.isNaN(n) ? null : n;
+}
+
 // Get all plans (auth required)
 router.get("/", adminAuthMiddleware, async (req, res) => {
   try {

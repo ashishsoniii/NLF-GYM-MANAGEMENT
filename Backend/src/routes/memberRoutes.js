@@ -204,6 +204,356 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
   }
 });
 
+// Import from PHPMyAdmin JSON export. Auth required.
+// POST /member/import-phpmyadmin  body: <raw array from u343517709_nlf.json> or { data: array }
+// Parses users + address + plan + enrolls_to and creates one Member per user with payments from enrolls_to.
+router.post("/import-phpmyadmin", adminAuthMiddleware, async (req, res) => {
+  try {
+    const raw = req.body;
+    const arr = Array.isArray(raw) ? raw : (raw?.data ?? raw?.phpmyadmin ?? null);
+    if (!Array.isArray(arr) || arr.length === 0) {
+      return res.status(400).json({
+        error: "Body must be the PHPMyAdmin JSON array or { data: [...] }",
+      });
+    }
+
+    const tables = {};
+    arr.forEach((item) => {
+      if (item?.type === "table" && item?.name && Array.isArray(item.data)) {
+        tables[item.name] = item.data;
+      }
+    });
+
+    const users = tables.users || [];
+    const addressList = tables.address || [];
+    const planList = tables.plan || [];
+    const enrollsTo = tables.enrolls_to || [];
+
+    const addressById = new Map(addressList.map((a) => [String(a.id), a]));
+    const planByPid = new Map(planList.map((p) => [String(p.pid), p]));
+
+    const enrollmentsByUid = new Map();
+    enrollsTo.forEach((e) => {
+      const uid = String(e.uid);
+      if (!enrollmentsByUid.has(uid)) enrollmentsByUid.set(uid, []);
+      enrollmentsByUid.get(uid).push(e);
+    });
+
+    const plans = await Plan.find({ isActive: true }).lean();
+    const planByName = new Map(plans.map((p) => [p.name.toLowerCase().trim(), p]));
+
+    const toInsert = [];
+    const errors = [];
+
+    for (let i = 0; i < users.length; i += 1) {
+      const u = users[i];
+      const userid = String(u.userid);
+      const name = u.username != null ? String(u.username).trim() : null;
+      const email = u.email != null ? String(u.email).trim().toLowerCase() : null;
+      const phone = (u.mobile != null ? String(u.mobile).trim() : null) || (u.contact != null ? String(u.contact).trim() : null);
+
+      if (!name || !email || !phone) {
+        errors.push({
+          index: i + 1,
+          identifier: email || name || userid,
+          error: "Missing name, email or mobile",
+        });
+        continue;
+      }
+
+      const addr = addressById.get(userid);
+      const addressStr = addr
+        ? [addr.streetName, addr.city, addr.state, addr.zipcode].filter(Boolean).join(", ")
+        : undefined;
+
+      const enrollments = (enrollmentsByUid.get(userid) || [])
+        .map((e) => ({
+          ...e,
+          paid_date: e.paid_date ? parseDate(e.paid_date) : null,
+          expire: e.expire ? parseDate(e.expire) : null,
+        }))
+        .filter((e) => e.paid_date && e.expire)
+        .sort((a, b) => (b.expire > a.expire ? 1 : -1));
+
+      const latestEnroll = enrollments[0];
+      if (!latestEnroll) {
+        errors.push({
+          index: i + 1,
+          identifier: email,
+          error: "No enrollment (paid_date/expire) found for user",
+        });
+        continue;
+      }
+
+      const planInfo = planByPid.get(String(latestEnroll.pid)) || {};
+      const latestPlanName = planInfo.planName != null ? String(planInfo.planName).trim() : "Plan";
+      const latestPaymentAmount = parseNumber(planInfo.amount) ?? 0;
+      const joiningDate = parseDate(u.joining_date, latestEnroll.paid_date) || latestEnroll.paid_date;
+      const expiryDate = latestEnroll.expire;
+      const latestPaymentDate = latestEnroll.paid_date;
+
+      const payments = enrollments.map((e) => {
+        const p = planByPid.get(String(e.pid)) || {};
+        return {
+          amount: parseNumber(p.amount) ?? 0,
+          date: e.paid_date,
+          joiningDate: e.paid_date,
+          expiryDate: e.expire,
+          paymentMethod: "Cash",
+          plan: {
+            planId: null,
+            name: p.planName || "Plan",
+            duration: parseNumber(p.validity) ?? 1,
+            price: parseNumber(p.amount) ?? 0,
+          },
+        };
+      });
+
+      let membershipPlanId = (planByName.get(latestPlanName.toLowerCase().trim()) || {})._id || null;
+
+      const memberDoc = {
+        name,
+        email,
+        phone,
+        address: addressStr,
+        dateOfBirth: parseDate(u.dob) || undefined,
+        gender: ["Male", "Female", "Other"].includes(String(u.gender || "").trim()) ? String(u.gender).trim() : undefined,
+        membershipPlan: membershipPlanId || undefined,
+        joiningDate,
+        expiryDate,
+        latestPaymentDate,
+        latestPaymentAmount,
+        latestPlanName,
+        payments,
+        assignedTrainer: undefined,
+        workoutType: "Fitness",
+        isActive: true,
+        notes: undefined,
+      };
+
+      toInsert.push(memberDoc);
+    }
+
+    if (toInsert.length === 0) {
+      return res.status(400).json({
+        message: "No valid members to insert",
+        errors,
+      });
+    }
+
+    let inserted = 0;
+    let failedFromDb = [];
+    try {
+      const result = await Member.insertMany(toInsert, { ordered: false });
+      inserted = Array.isArray(result) ? result.length : (result.insertedCount ?? 0);
+    } catch (err) {
+      inserted = err.insertedDocs?.length ?? err.result?.nInserted ?? 0;
+      const writeErrors = err.writeErrors || [];
+      failedFromDb = writeErrors.map((e) => ({
+        index: e.index + 1,
+        identifier: toInsert[e.index]?.email || `index ${e.index + 1}`,
+        error: e.err?.message || e.err?.errmsg || String(e.err),
+      }));
+    }
+
+    return res.status(201).json({
+      message: `PHPMyAdmin import complete: ${inserted} members inserted, ${errors.length + failedFromDb.length} failed`,
+      inserted,
+      failed: errors.length + failedFromDb.length,
+      errors: [...errors, ...failedFromDb],
+    });
+  } catch (error) {
+    console.error("import-phpmyadmin error:", error);
+    return res.status(500).json({ error: error.message || "Import failed" });
+  }
+});
+
+// Bulk add members from JSON (e.g. phpMyAdmin export). Auth required.
+// POST /member/bulk-add  body: { members: [ { name, email, phone, ... }, ... ] }
+router.post("/bulk-add", adminAuthMiddleware, async (req, res) => {
+  try {
+    const { members: rawMembers } = req.body;
+
+    if (!Array.isArray(rawMembers) || rawMembers.length === 0) {
+      return res.status(400).json({
+        error: "Body must be { members: [ {...}, {...} ] } with at least one member",
+      });
+    }
+
+    const plans = await Plan.find({ isActive: true }).lean();
+    const planByName = new Map(plans.map((p) => [p.name.toLowerCase().trim(), p]));
+
+    const toInsert = [];
+    const errors = [];
+
+    for (let i = 0; i < rawMembers.length; i += 1) {
+      const row = rawMembers[i];
+      const name = row.name != null ? String(row.name).trim() : null;
+      const email = row.email != null ? String(row.email).trim().toLowerCase() : null;
+      const phone = row.phone != null ? String(row.phone).trim() : null;
+
+      if (!name || !email || !phone) {
+        errors.push({
+          index: i + 1,
+          identifier: email || name || `row ${i + 1}`,
+          error: "Missing required field: name, email and phone are required",
+        });
+        continue;
+      }
+
+      const joiningDate = parseDate(row.joiningDate, new Date());
+      const expiryDate = parseDate(row.expiryDate);
+      const latestPaymentDate = parseDate(row.latestPaymentDate, new Date());
+      if (!expiryDate) {
+        errors.push({
+          index: i + 1,
+          identifier: email,
+          error: "Valid expiryDate required (e.g. YYYY-MM-DD)",
+        });
+        continue;
+      }
+
+      const latestPaymentAmount = parseNumber(row.latestPaymentAmount, row.latest_payment_amount);
+      const latestPlanName = row.latestPlanName != null ? String(row.latestPlanName).trim() : (row.latest_plan_name != null ? String(row.latest_plan_name).trim() : null);
+      if (latestPaymentAmount == null || latestPaymentAmount < 0) {
+        errors.push({
+          index: i + 1,
+          identifier: email,
+          error: "Valid latestPaymentAmount (number >= 0) required",
+        });
+        continue;
+      }
+      if (!latestPlanName) {
+        errors.push({
+          index: i + 1,
+          identifier: email,
+          error: "latestPlanName (or latest_plan_name) required",
+        });
+        continue;
+      }
+
+      let membershipPlanId = null;
+      if (row.membershipPlan) {
+        membershipPlanId = mongoose.Types.ObjectId.isValid(row.membershipPlan)
+          ? row.membershipPlan
+          : (planByName.get(String(row.membershipPlan).toLowerCase().trim()) || {})._id;
+      }
+      if (!membershipPlanId && latestPlanName) {
+        const plan = planByName.get(latestPlanName.toLowerCase().trim());
+        if (plan) membershipPlanId = plan._id;
+      }
+
+      const gender = row.gender != null ? String(row.gender).trim() : null;
+      const validGender = gender && ["Male", "Female", "Other"].includes(gender) ? gender : undefined;
+
+      const workoutType = row.workoutType != null ? String(row.workoutType).trim() : (row.workout_type != null ? String(row.workout_type).trim() : null);
+      const validWorkout = workoutType && ["Fitness", "Weight Lifting", "Cardio", "Yoga", "General"].includes(workoutType) ? workoutType : "Fitness";
+
+      let payments = [];
+      if (Array.isArray(row.payments) && row.payments.length > 0) {
+        payments = row.payments.map((p) => ({
+          amount: parseNumber(p.amount) ?? 0,
+          date: parseDate(p.date, new Date()),
+          joiningDate: parseDate(p.joiningDate, joiningDate),
+          expiryDate: parseDate(p.expiryDate, expiryDate),
+          paymentMethod: ["Cash", "Card", "Online"].includes(p.paymentMethod || p.payment_method) ? (p.paymentMethod || p.payment_method) : "Cash",
+          plan: {
+            planId: p.planId || p.plan_id || membershipPlanId,
+            name: p.name || latestPlanName,
+            duration: typeof p.duration === "number" ? p.duration : parseNumber(p.duration),
+            price: typeof p.price === "number" ? p.price : parseNumber(p.price),
+          },
+        })).filter((p) => p.amount >= 0);
+      }
+      if (payments.length === 0) {
+        payments = [
+          {
+            amount: latestPaymentAmount,
+            date: latestPaymentDate,
+            joiningDate,
+            expiryDate,
+            paymentMethod: "Cash",
+            plan: {
+              planId: membershipPlanId,
+              name: latestPlanName,
+              duration: null,
+              price: latestPaymentAmount,
+            },
+          },
+        ];
+      }
+
+      const memberDoc = {
+        name,
+        email,
+        phone,
+        address: row.address != null ? String(row.address).trim() : undefined,
+        dateOfBirth: row.dateOfBirth != null ? parseDate(row.dateOfBirth) : undefined,
+        gender: validGender,
+        membershipPlan: membershipPlanId || undefined,
+        joiningDate,
+        expiryDate,
+        latestPaymentDate,
+        latestPaymentAmount,
+        latestPlanName,
+        payments,
+        assignedTrainer: row.assignedTrainer && mongoose.Types.ObjectId.isValid(row.assignedTrainer) ? row.assignedTrainer : undefined,
+        workoutType: validWorkout,
+        isActive: row.isActive !== false && row.is_active !== false,
+        notes: row.notes != null ? String(row.notes).trim() : undefined,
+      };
+
+      toInsert.push(memberDoc);
+    }
+
+    if (toInsert.length === 0) {
+      return res.status(400).json({
+        message: "No valid members to insert",
+        errors,
+      });
+    }
+
+    let inserted = 0;
+    let failedFromDb = [];
+
+    try {
+      const result = await Member.insertMany(toInsert, { ordered: false });
+      inserted = Array.isArray(result) ? result.length : (result.insertedCount ?? 0);
+    } catch (err) {
+      inserted = err.insertedDocs?.length ?? err.result?.nInserted ?? 0;
+      const writeErrors = err.writeErrors || [];
+      failedFromDb = writeErrors.map((e) => ({
+        index: e.index + 1,
+        identifier: toInsert[e.index]?.email || `index ${e.index + 1}`,
+        error: e.err?.message || e.err?.errmsg || String(e.err),
+      }));
+    }
+
+    return res.status(201).json({
+      message: `Bulk add complete: ${inserted} inserted, ${errors.length + failedFromDb.length} failed`,
+      inserted,
+      failed: errors.length + failedFromDb.length,
+      errors: [...errors, ...failedFromDb],
+    });
+  } catch (error) {
+    console.error("Bulk add error:", error);
+    return res.status(500).json({ error: error.message || "Bulk add failed" });
+  }
+});
+
+function parseDate(val, fallback = null) {
+  if (val == null) return fallback;
+  if (val instanceof Date) return val;
+  const d = new Date(val);
+  return Number.isNaN(d.getTime()) ? fallback : d;
+}
+
+function parseNumber(val, alt) {
+  if (val != null && !Number.isNaN(Number(val))) return Number(val);
+  if (alt != null && !Number.isNaN(Number(alt))) return Number(alt);
+  return null;
+}
+
 // Route to fetch all members
 router.get("/all", adminAuthMiddleware, async (req, res) => {
   try {

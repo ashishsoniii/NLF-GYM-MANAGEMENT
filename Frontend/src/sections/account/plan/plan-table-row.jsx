@@ -6,6 +6,8 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
+import { fDateLong } from 'src/utils/format-time';
+
 // ----------------------------------------------------------------------
 
 export default function UserTableRow({
@@ -41,11 +43,23 @@ export default function UserTableRow({
         </TableCell>
 
         {/* <TableCell>{name}</TableCell> */}
-        <TableCell>{new Date(startDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
-        <TableCell>{new Date(expiryDate).toISOString().slice(0, 10).split('T')[0]}</TableCell>
+        <TableCell>
+          <span title={fDateLong(startDate)}>
+            {new Date(startDate).toISOString().slice(0, 10).split('T')[0]}
+          </span>
+        </TableCell>
+        <TableCell>
+          <span title={fDateLong(expiryDate)}>
+            {new Date(expiryDate).toISOString().slice(0, 10).split('T')[0]}
+          </span>
+        </TableCell>
 
         <TableCell>{duration} Months</TableCell>
-        <TableCell>{new Date(PaymentDate  ).toISOString().slice(0, 10).split('T')[0]}</TableCell>
+        <TableCell>
+          <span title={fDateLong(PaymentDate)}>
+            {new Date(PaymentDate).toISOString().slice(0, 10).split('T')[0]}
+          </span>
+        </TableCell>
 
         <TableCell align="center">{price}</TableCell>
 
