@@ -50,6 +50,7 @@ router.get("/statistics", adminAuthMiddleware, async (req, res) => {
       totalPlansCount,
     });
   } catch (error) {
+    console.error("statistics error:", error);
     res
       .status(500)
       .json({ error: "An error occurred while fetching statistics" });
@@ -82,7 +83,8 @@ router.get("/members/joined", adminAuthMiddleware, async (req, res) => {
       members,
     });
   } catch (error) {
-    res.status(500).send(error.message);
+    console.error("members/joined error:", error);
+    res.status(500).json({ error: error.message || "Server error" });
   }
 });
 
@@ -138,8 +140,9 @@ router.get("/members/joined", adminAuthMiddleware, async (req, res) => {
 
 router.get("/members/chart-data", adminAuthMiddleware, async (req, res) => {
   try {
-    // Aggregate data to get counts and other details per month for joining dates
+    // Only include members with valid joiningDate (avoids null month/year after schema/index changes)
     const joinData = await Member.aggregate([
+      { $match: { joiningDate: { $exists: true, $ne: null } } },
       {
         $group: {
           _id: {
@@ -149,91 +152,56 @@ router.get("/members/chart-data", adminAuthMiddleware, async (req, res) => {
           count: { $sum: 1 },
         },
       },
-      {
-        $sort: {
-          "_id.year": 1,
-          "_id.month": 1,
-        },
-      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
-    // Aggregate data to get counts of payments per month
     const paymentData = await Member.aggregate([
-      { $unwind: "$payments" },
+      { $unwind: { path: "$payments", preserveNullAndEmptyArrays: false } },
+      { $match: { "payments.date": { $exists: true, $ne: null } } },
       {
         $group: {
           _id: {
             month: { $month: "$payments.date" },
             year: { $year: "$payments.date" },
           },
-          count: { $sum: 1 }, // Count the number of payments
+          count: { $sum: 1 },
         },
       },
-      {
-        $sort: {
-          "_id.year": 1,
-          "_id.month": 1,
-        },
-      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
-    // Aggregate data to get the cumulative total payments
-    const totalPayments = await Member.aggregate([
-      { $unwind: "$payments" },
-      {
-        $group: {
-          _id: null,
-          totalPayment: { $sum: "$payments.amount" },
-        },
-      },
-    ]);
-
-    // Process data to match the required chart structure
     const labels = [];
     const series = [
-      {
-        name: 'Joined Members',
-        type: 'column',
-        fill: 'solid',
-        data: [],
-      },
-      {
-        name: 'Payments Added This Month',
-        type: 'area',
-        fill: 'gradient',
-        data: [],
-      },
-      {
-        name: 'Total Payments',
-        type: 'line',
-        fill: 'solid',
-        data: [],
-      },
+      { name: "Joined Members", type: "column", fill: "solid", data: [] },
+      { name: "Payments Added This Month", type: "area", fill: "gradient", data: [] },
+      { name: "Total Payments", type: "line", fill: "solid", data: [] },
     ];
 
     const paymentCountMap = new Map();
     paymentData.forEach((item) => {
-      const dateKey = `${item._id.year}-${item._id.month}`;
-      paymentCountMap.set(dateKey, item.count);
+      if (item._id && item._id.month != null && item._id.year != null) {
+        const dateKey = `${item._id.year}-${item._id.month}`;
+        paymentCountMap.set(dateKey, item.count);
+      }
     });
 
     let cumulativeTotalPayments = 0;
     joinData.forEach((item) => {
-      const dateKey = `${item._id.year}-${item._id.month}`;
-      labels.push(`${item._id.month}/01/${item._id.year}`);
-      series[0].data.push(item.count);
-      const monthlyPaymentCount = paymentCountMap.get(dateKey) || 0;
-      series[1].data.push(monthlyPaymentCount);
-      cumulativeTotalPayments += monthlyPaymentCount;
-      series[2].data.push(cumulativeTotalPayments);
+      if (item._id && item._id.month != null && item._id.year != null) {
+        const dateKey = `${item._id.year}-${item._id.month}`;
+        labels.push(`${item._id.month}/01/${item._id.year}`);
+        series[0].data.push(item.count);
+        const monthlyPaymentCount = paymentCountMap.get(dateKey) || 0;
+        series[1].data.push(monthlyPaymentCount);
+        cumulativeTotalPayments += monthlyPaymentCount;
+        series[2].data.push(cumulativeTotalPayments);
+      }
     });
 
-    res.json({
-      labels,
-      series,
-    });
+    res.json({ labels, series });
   } catch (error) {
-    res.status(500).send(error.message);
+    console.error("chart-data error:", error);
+    res.status(500).json({ error: "An error occurred while fetching chart data" });
   }
 });
 

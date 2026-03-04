@@ -1,23 +1,36 @@
 const mongoose = require("mongoose");
 
-const trainerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  phone: { type: String, required: true },
-  specialization: String,
-  roles: { type: [String], default: ["trainer"], enum: ["admin", "trainer"] },
-  commissionRate: Number,
-  isActive: { type: Boolean, default: true },
-  payments: [
-    {
-      amount: { type: Number, required: true },
-      date: { type: Date, default: Date.now },
-      description: String,
+const trainerSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-  ],
-  createdAt: { type: Date, default: Date.now }, // Date created
-  lastLogin: { type: Date }, // Last login
-  password: { type: String, required: true },
-});
+    phone: { type: String, required: true },
+    specialization: String,
+    roles: {
+      type: [{ type: String, enum: ["admin", "trainer"] }],
+      default: ["trainer"],
+    },
+    commissionRate: Number,
+    isActive: { type: Boolean, default: true },
+    payments: [
+      {
+        amount: { type: Number, required: true },
+        date: { type: Date, default: Date.now },
+        description: String,
+      },
+    ],
+    lastLogin: { type: Date },
+    password: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+trainerSchema.index({ email: 1 });
 
 module.exports = mongoose.model("Trainer", trainerSchema);

@@ -1,25 +1,24 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Define the Email schema
-const emailSchema = new Schema({
-  nameTo: {
-    type: String,
-    required: true,
+const emailSchema = new Schema(
+  {
+    nameTo: { type: String, required: true },
+    subject: { type: String, required: true },
+    emailTo: { type: String, required: true },
+    memberId: { type: Schema.Types.ObjectId, ref: "Member" },
+    status: {
+      type: String,
+      enum: ["sent", "failed"],
+      default: "sent",
+    },
+    errorMessage: String,
+    sentAt: { type: Date, default: Date.now },
   },
-  subject: {
-    type: String,
-    required: true,
-  },
-  emailTo: {
-    type: String,
-    required: true,
-  },
-  sentAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
+
+emailSchema.index({ sentAt: -1 });
 
 const Email = mongoose.model("Email", emailSchema);
 

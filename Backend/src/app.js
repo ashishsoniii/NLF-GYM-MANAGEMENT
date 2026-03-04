@@ -13,8 +13,15 @@ const statisticsRoutes = require("./routes/statisticsRoutes");
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Allow all origins for now (restrict FRONTEND_URL in production)
-app.use(cors());
+// Allow all origins (e.g. https://nlfgym.netlify.app) – restrict in production if needed
+app.use(
+  cors({
+    origin: true, // allow any origin (reflects request origin)
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
