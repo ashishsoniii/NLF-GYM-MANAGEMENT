@@ -57,7 +57,7 @@ export default function EmailPage() {
   const fetchPlans = async () => {
     try {
       const response = await api.get('/member/emails');
-      setPlans(response.data.emails);
+      setPlans(response.data.emails ?? []);
     } catch (error) {
       // Error handled by api interceptor or component
     }

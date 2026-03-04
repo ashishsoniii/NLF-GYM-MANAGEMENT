@@ -37,7 +37,7 @@ export default function AppView() {
     const fetchIncomeData = async () => {
       try {
         const response = await api.get(`/stat/income/${year}`);
-        setIncomeData(response.data);
+        setIncomeData(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         // Handled by api interceptor
       }
@@ -49,7 +49,10 @@ export default function AppView() {
     const fetchData = async () => {
       try {
         const response = await api.get('/stat/members/chart-data');
-        setChartData(response.data);
+        setChartData({
+          labels: response.data?.labels ?? [],
+          series: response.data?.series ?? [],
+        });
       } catch (error) {
         // Handled by api interceptor
       }
@@ -61,7 +64,7 @@ export default function AppView() {
     const fetchDataMFStat = async () => {
       try {
         const response = await api.get('/stat/members/mle-statistics');
-        setMleStatistics(response.data.series);
+        setMleStatistics(response.data.series ?? []);
       } catch (error) {
         // Handled by api interceptor
       }

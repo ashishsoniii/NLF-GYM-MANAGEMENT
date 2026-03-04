@@ -78,7 +78,7 @@ export default function UserPage() {
           ? `/member/expiredUser/${selectExpiredFilter}`
           : `/member/${clickedTitle}`;
       const response = await api.get(url);
-      setusers(response.data.members);
+      setusers(response.data.members ?? []);
     } catch (error) {
       // Handled by api interceptor
     }
@@ -142,7 +142,7 @@ export default function UserPage() {
   };
 
   const dataFiltered = applyFilter({
-    inputData: users,
+    inputData: users ?? [],
     comparator: getComparator(order, orderBy),
     filterName,
   });
@@ -307,7 +307,7 @@ export default function UserPage() {
                   <UserTableHead
                     order={order}
                     orderBy={orderBy}
-                    rowCount={users.length}
+                    rowCount={(users ?? []).length}
                     numSelected={selected.length}
                     onRequestSort={handleSort}
                     onSelectAllClick={handleSelectAllClick}

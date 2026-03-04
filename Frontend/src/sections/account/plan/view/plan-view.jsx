@@ -50,7 +50,7 @@ export default function PlanPage({ payments }) {
   const fetchPlans = async () => {
     try {
       const response = await api.get('/plan');
-      setPlans(response.data);
+      setPlans(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       // Handled by api interceptor
     }
