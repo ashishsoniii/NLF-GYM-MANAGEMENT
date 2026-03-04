@@ -1,9 +1,10 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
+
+import api from 'src/api/axios';
 
 import AppCurrentVisits from '../app-current-visits';
 import AppWebsiteVisits from '../app-website-visits';
@@ -17,70 +18,54 @@ export default function AppView() {
   });
   const [mleStatistics, setMleStatistics] = useState([]);
   const [gymStatistics, setGymStatistics] = useState(null);
-  console.log(gymStatistics);
-  console.log(gymStatistics);
-  console.log(gymStatistics);
-  console.log(gymStatistics);
-
   const [incomeData, setIncomeData] = useState([]);
-  const year = 2024; // Replace with dynamic year if needed
+  const year = 2024;
 
   useEffect(() => {
     const fetchStatsCard = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/stat/statistics`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setGymStatistics(data);
+        const response = await api.get('/stat/statistics');
+        setGymStatistics(response.data);
       } catch (error) {
-        console.error('Error fetching income data:', error);
+        // Handled by api interceptor
       }
     };
-
     fetchStatsCard();
-  }, [year]);
+  }, []);
+
   useEffect(() => {
     const fetchIncomeData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/stat/income/${year}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setIncomeData(data);
+        const response = await api.get(`/stat/income/${year}`);
+        setIncomeData(response.data);
       } catch (error) {
-        console.error('Error fetching income data:', error);
+        // Handled by api interceptor
       }
     };
-
     fetchIncomeData();
   }, [year]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/stat/members/chart-data`);
+        const response = await api.get('/stat/members/chart-data');
         setChartData(response.data);
       } catch (error) {
-        console.error('Error fetching MLE statistics:', error);
+        // Handled by api interceptor
       }
     };
-
     fetchData();
   }, []);
 
   useEffect(() => {
     const fetchDataMFStat = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/stat/members/mle-statistics`);
+        const response = await api.get('/stat/members/mle-statistics');
         setMleStatistics(response.data.series);
       } catch (error) {
-        console.error('Error fetching chart data:', error);
+        // Handled by api interceptor
       }
     };
-
     fetchDataMFStat();
   }, []);
 

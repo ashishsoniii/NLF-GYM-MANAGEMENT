@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
@@ -16,6 +15,8 @@ import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+
+import api from 'src/api/axios';
 
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -53,28 +54,13 @@ export default function UserTableRow({
     setOpen(null);
   };
   const handleDelete = async () => {
-    setConfirmationOpen(false); // Close the confirmation dialog
+    setConfirmationOpen(false);
     try {
-      const token = localStorage.getItem('token');
-
-      // Send DELETE request to delete the plan
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}`, {
-        headers: {
-          Authorization: `${token}`, // Include the token in the Authorization header
-        },
-      });
-
-      // Refresh plans after successful deletion
+      await api.delete(`/plan/${id}`);
       fetchPlans();
-      console.log('Plan deleted successfully:', response.data);
     } catch (error) {
-      console.error('Error deleting plan:', error);
-
-      // Display error message or notification
-      // For example, you can use a state variable to store the error message and display it in your UI
-      // setError(error.message);
+      // Handled by api interceptor
     }
-
     setOpen(null);
   };
 
@@ -82,17 +68,10 @@ export default function UserTableRow({
     setConfirmationActivateOpen(false);
     try {
       setOpen(null);
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}/activate`, null, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      await api.patch(`/plan/${id}/activate`, null);
       fetchPlans();
-
-      console.log('Plan activated successfully:', response.data);
     } catch (error) {
-      console.error('Error activating plan:', error);
+      // Handled by api interceptor
     }
   };
 
@@ -100,17 +79,10 @@ export default function UserTableRow({
     setConfirmationActivateOpen(false);
     try {
       setOpen(null);
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}/deactivate`, null, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      await api.patch(`/plan/${id}/deactivate`, null);
       fetchPlans();
-
-      console.log('Plan deactivated successfully:', response.data);
     } catch (error) {
-      console.error('Error deactivating plan:', error);
+      // Handled by api interceptor
     }
   };
 

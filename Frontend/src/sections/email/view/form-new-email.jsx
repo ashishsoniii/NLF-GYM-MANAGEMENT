@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
@@ -10,6 +9,8 @@ import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
 import LoadingButton from '@mui/lab/LoadingButton';
 import FormControl from '@mui/material/FormControl';
+
+import api from 'src/api/axios';
 
 export default function SendEmailForm({ setClickedTitle }) {
   const [emailData, setEmailData] = useState({
@@ -41,14 +42,7 @@ export default function SendEmailForm({ setClickedTitle }) {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/sendEmail`, emailData, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-
-      console.log('Email sent successfully:', response.data);
+      await api.post('/member/sendEmail', emailData);
       setEmailData({
         emailOption: 'everyone',
         customEmails: '',
@@ -60,7 +54,6 @@ export default function SendEmailForm({ setClickedTitle }) {
       setErrorShow('Email sent successfully');
       setClickedTitle('All Email');
     } catch (error) {
-      console.error('Error sending email:', error);
       setErrorShow(error.response?.data?.error || 'Error sending email');
     } finally {
       setLoading(false); // Set loading to false when the login completes

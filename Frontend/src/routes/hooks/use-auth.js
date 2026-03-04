@@ -1,27 +1,34 @@
 import { useEffect } from 'react';
 
-import { useRouter } from 'src/routes/hooks';
+import { useRouter, usePathname } from 'src/routes/hooks';
 
 const useAuth = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-    // Check if token is available
-    if (!token) {
-      // Token not available, redirect to login page
-      router.push('/login');
+    if (pathname === '/login') {
+      if (token) {
+        const decoded = decodeToken(token);
+        if (decoded && decoded.exp > Date.now() / 1000) {
+          router.replace('/');
+        }
+      }
       return;
     }
 
-    // Decode token to check if it's expired
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+
     const decodedToken = decodeToken(token);
     if (!decodedToken || decodedToken.exp < Date.now() / 1000) {
-      // Token expired, redirect to login page
-      router.push('/login');
+      router.replace('/login');
     }
-  }, [router]);
+  }, [router, pathname]);
 
   return null;
 };

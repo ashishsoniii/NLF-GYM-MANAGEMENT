@@ -15,9 +15,6 @@ import {
 // const user = window.sessionStorage.getItem("user");
 
 export const AccountProfileDetails = ({ userDetails }) => {
-  console.log('edr hi ');
-  console.log(userDetails);
-  console.log(userDetails);
   const [values, setValues] = useState({
     name: userDetails.name,
     phone: userDetails.phone,

@@ -4,8 +4,8 @@ const Member = require("../models/Member");
 const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 
-// Route to get the required statistics
-router.get("/statistics", async (req, res) => {
+// Route to get the required statistics (auth required)
+router.get("/statistics", adminAuthMiddleware, async (req, res) => {
   try {
     const currentMonthStart = new Date(
       new Date().getFullYear(),
@@ -56,8 +56,8 @@ router.get("/statistics", async (req, res) => {
   }
 });
 
-// get me list of ppl month wise
-router.get("/members/joined", async (req, res) => {
+// get me list of ppl month wise (auth required)
+router.get("/members/joined", adminAuthMiddleware, async (req, res) => {
   const { month, year } = req.query;
 
   if (!month || !year) {
@@ -136,7 +136,7 @@ router.get("/members/joined", async (req, res) => {
 // });
 
 
-router.get("/members/chart-data", async (req, res) => {
+router.get("/members/chart-data", adminAuthMiddleware, async (req, res) => {
   try {
     // Aggregate data to get counts and other details per month for joining dates
     const joinData = await Member.aggregate([
@@ -238,8 +238,8 @@ router.get("/members/chart-data", async (req, res) => {
 });
 
 
-// Route to get MLE (Male/Female/Other) statistics
-router.get('/members/mle-statistics', async (req, res) => {
+// Route to get MLE (Male/Female/Other) statistics (auth required)
+router.get('/members/mle-statistics', adminAuthMiddleware, async (req, res) => {
   try {
     const mleStatistics = await Member.aggregate([
       {
@@ -378,8 +378,8 @@ const getMonthLabel = (month) => {
   }
 };
 
-// Endpoint to get income per month for a specific year
-router.get("/income/:year", async (req, res) => {
+// Endpoint to get income per month for a specific year (auth required)
+router.get("/income/:year", adminAuthMiddleware, async (req, res) => {
   const year = parseInt(req.params.year);
 
   try {

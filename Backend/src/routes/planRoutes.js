@@ -28,8 +28,8 @@ router.post("/", adminAuthMiddleware, async (req, res) => {
   }
 });
 
-// Get all plans
-router.get("/", async (req, res) => {
+// Get all plans (auth required)
+router.get("/", adminAuthMiddleware, async (req, res) => {
   try {
     const plans = await Plan.find();
     res.json(plans);
@@ -37,8 +37,8 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Get currently ACTIVE plans
-router.get("/active", async (req, res) => {
+// Get currently ACTIVE plans (auth required)
+router.get("/active", adminAuthMiddleware, async (req, res) => {
   try {
     const plans = await Plan.find({ isActive: true });
     res.json(plans);
@@ -47,8 +47,8 @@ router.get("/active", async (req, res) => {
   }
 });
 
-// Get a specific plan by ID
-router.get("/:id", async (req, res) => {
+// Get a specific plan by ID (auth required)
+router.get("/:id", adminAuthMiddleware, async (req, res) => {
   try {
     const plan = await Plan.findById(req.params.id);
     if (!plan) {

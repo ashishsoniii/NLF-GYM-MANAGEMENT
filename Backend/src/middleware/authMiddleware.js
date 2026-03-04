@@ -3,7 +3,11 @@
 // middleware/authMiddleware.js
 
 const jwt = require("jsonwebtoken");
-const secretKey = "admin@123"; // Replace with the same secret key used for signing
+
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
 
 const Admin = require("../models/Admin");
 

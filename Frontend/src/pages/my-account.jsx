@@ -1,11 +1,12 @@
-import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import React, { useState, useEffect } from 'react';
 
 import { Box, Stack, Container, Typography, Unstable_Grid2 as Grid } from '@mui/material';
 
+import api from 'src/api/axios';
+
 import { AccountProfile } from 'src/sections/myAccount/account-profile';
-import  AccountPasswordChange  from 'src/sections/myAccount/account-password-change';
+import AccountPasswordChange from 'src/sections/myAccount/account-password-change';
 import { AccountProfileDetails } from 'src/sections/myAccount/account-profile-details';
 
 const AccountPage = () => {
@@ -14,19 +15,10 @@ const AccountPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/userDetails`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
-        console.log('response');
-        console.log('response');
-        console.log('response');
-        console.log(response.data.user);
+        const response = await api.get('/auth/userDetails');
         setUserDetails(response.data.user);
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        // Handled by api interceptor
       }
     };
 

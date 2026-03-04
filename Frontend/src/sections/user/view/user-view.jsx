@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { Grid } from '@mui/material';
@@ -12,10 +11,9 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-// import { users } from 'src/_mock/user';
+import api from 'src/api/axios';
 import AccountPage from 'src/pages/account';
 
-// import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 import NewUserForm from './new-user-form';
@@ -75,22 +73,14 @@ export default function UserPage() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/member/${clickedTitle}/${
-          clickedTitle === 'expiredUser' ? selectExpiredFilter : ''
-        }`,
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
-      );
+      const url =
+        clickedTitle === 'expiredUser'
+          ? `/member/expiredUser/${selectExpiredFilter}`
+          : `/member/${clickedTitle}`;
+      const response = await api.get(url);
       setusers(response.data.members);
-      console.log(response.data);
-      console.log('users Here:', response.data);
     } catch (error) {
-      console.error('Error fetching plans:', error);
+      // Handled by api interceptor
     }
   }, [clickedTitle, selectExpiredFilter]);
 

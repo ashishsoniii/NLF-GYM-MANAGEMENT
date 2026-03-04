@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -14,6 +13,8 @@ import {
   CardContent,
   CircularProgress,
 } from '@mui/material';
+
+import api from 'src/api/axios';
 
 const AccountPasswordChange = ({ userID }) => {
   const [oldPassword, setOldPassword] = useState('');
@@ -37,30 +38,18 @@ const AccountPasswordChange = ({ userID }) => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/changePassword`,
-        {
-          userID,
-          oldPassword,
-          newPassword,
-        },
-        {
-          headers: {
-            Authorization: `${token}`,
-          },
-        }
-      );
-
-      console.log('Password change successful:', response.data);
+      await api.post('/auth/changePassword', {
+        userID,
+        oldPassword,
+        newPassword,
+      });
       setSnackbarMessage('Password changed successfully.');
 
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      console.error('Error changing password:', error.response.data.error);
-      setSnackbarMessage('Failed to change password. Please try again.');
+      setSnackbarMessage(error.response?.data?.error || 'Failed to change password. Please try again.');
     } finally {
       setIsLoading(false);
     }

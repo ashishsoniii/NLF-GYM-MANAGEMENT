@@ -10,6 +10,7 @@ const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
 const puppeteer = require("puppeteer");
 const Email = require("../models/Email"); // Import the Email model
 const sharp = require("sharp");
+const multer = require("multer");
 const upload = require("../middleware/multer");
 
 
@@ -290,7 +291,7 @@ router.put("/modify/:id", adminAuthMiddleware, async (req, res) => {
   }
 });
 
-router.post("/addPayment/:id", async (req, res) => {
+router.post("/addPayment/:id", adminAuthMiddleware, async (req, res) => {
   const { id } = req.params;
   const { amount, planId, expiryDate, joiningDate } = req.body;
 
@@ -416,8 +417,8 @@ router.post("/addPayment/:id", async (req, res) => {
 //   }
 // });
 
-// Route to get expired users for a specified number of days or all expired users
-router.get("/expiredUser/:days", async (req, res) => {
+// Route to get expired users for a specified number of days or all expired users (auth required)
+router.get("/expiredUser/:days", adminAuthMiddleware, async (req, res) => {
   try {
     // Get the number of days from the route parameters
     const daysParam = req.params.days;

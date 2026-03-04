@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
@@ -14,6 +13,8 @@ import {
   DialogActions,
   DialogContent,
 } from '@mui/material';
+
+import api from 'src/api/axios';
 
 function UserPaymentDialog({
   currentDataRow,
@@ -41,14 +42,12 @@ function UserPaymentDialog({
   }, []);
 
   const fetchPlans = async () => {
-
     try {
-      const response = await axios.get( `${import.meta.env.VITE_BACKEND_URL}/plan/active`);
+      const response = await api.get('/plan/active');
       setPlans(response.data);
     } catch (error) {
-      console.error('Error fetching plans:', error);
       setError('Error fetching plans');
-    } 
+    }
   };
 
   const calculateExpiryDate = (joiningDate, durationInMonths) => {
@@ -69,7 +68,6 @@ function UserPaymentDialog({
         expiryDate: calculateExpiryDate(new Date(value), durationInMonths),
       }));
     } else {
-      console.error('No plan selected');
       setError('Please select a membership plan first');
     }
   };
@@ -93,7 +91,6 @@ function UserPaymentDialog({
         planName: currentSelectedPlan.name,
       }));
     } else {
-      console.error('Selected plan not found');
       setError('Selected plan not found');
     }
   };
@@ -115,26 +112,17 @@ function UserPaymentDialog({
     }
 
     try {
-      const token = localStorage.getItem('token');
       const paymentData = {
         amount: selectedPlan.price,
         planId: selectedPlan._id,
         joiningDate: userData.joiningDate,
         expiryDate: userData.expiryDate,
       };
-
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/addPayment/${id}`, paymentData, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-
+      await api.post(`/member/addPayment/${id}`, paymentData);
       fetchUsers();
       setConfirmationEditOpen(false);
-      console.log('Payment added successfully');
     } catch (error) {
-      console.error('Error adding payment:', error);
-      setError(error.message);
+      setError(error.response?.data?.error || error.message);
     } finally {
       setLoading(false); // Set loading to false when the login completes
     }

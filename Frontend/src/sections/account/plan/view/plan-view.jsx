@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 
@@ -9,7 +8,7 @@ import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-// import { users } from 'src/_mock/plan';
+import api from 'src/api/axios';
 
 import Scrollbar from 'src/components/scrollbar';
 
@@ -22,9 +21,7 @@ import { emptyRows, applyFilter, getComparator } from '../utils';
 
 // ----------------------------------------------------------------------
 
-export default function PlanPage({payments}) {
-
-  console.log(payments);
+export default function PlanPage({ payments }) {
   const [page, setPage] = useState(0);
 
   const [clickedTitle, ] = useState('All Plans');
@@ -52,11 +49,10 @@ export default function PlanPage({payments}) {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/plan`); // Replace with your API endpoint
+      const response = await api.get('/plan');
       setPlans(response.data);
-      console.log('Error fetcaing plans:', response.data);
     } catch (error) {
-      console.error('Error fetcaing plans:', error);
+      // Handled by api interceptor
     }
   };
 

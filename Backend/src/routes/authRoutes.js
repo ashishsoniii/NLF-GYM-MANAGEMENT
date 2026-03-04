@@ -7,7 +7,10 @@ const Admin = require("../models/Admin");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
-const secretKey = "admin@123"; // Enter a secure secret key
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
 
 // Trainer Registration
 router.post("/trainerRegistration", adminAuthMiddleware, async (req, res) => {

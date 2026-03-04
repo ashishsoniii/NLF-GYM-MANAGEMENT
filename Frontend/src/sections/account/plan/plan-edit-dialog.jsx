@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
@@ -12,6 +11,8 @@ import {
   DialogActions,
   DialogContent,
 } from '@mui/material';
+
+import api from 'src/api/axios';
 
 function EditPlanDialog({
   isConfirmationEditOpen,
@@ -39,23 +40,11 @@ function EditPlanDialog({
 
   const handleEdit = async () => {
     try {
-      const token = localStorage.getItem('token');
-
-      // Send PUT request to edit the plan
-      const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/plan/${id}`, planData, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-
-      // Refresh plans after successful edit
+      await api.put(`/plan/${id}`, planData);
       fetchPlans();
-      console.log('Plan edited successfully:', response.data);
     } catch (error) {
-      console.error('Error editing plan:', error);
-      setError(error.message);
+      setError(error.response?.data?.error || error.message);
     }
-
     setConfirmationEditOpen(false);
   };
 

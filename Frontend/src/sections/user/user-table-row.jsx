@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 
@@ -18,6 +17,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
+import api from 'src/api/axios';
+
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 
@@ -25,7 +26,6 @@ import UserEditDialog from './user-edit-dialog';
 import UserPaymentDialog from './user-payment-dialog';
 
 // ----------------------------------------------------------------------
-
 
 const bufferToBase64 = (buffer) => {
   if (!buffer || !buffer.data || buffer.data.length === 0) {
@@ -42,9 +42,6 @@ const bufferToBase64 = (buffer) => {
     return ''; // or return a default placeholder image URL
   }
 };
-
-
-
 
 export default function UserTableRow({
   selected,
@@ -88,11 +85,8 @@ export default function UserTableRow({
     setOpen(event.currentTarget);
   };
 
-
-  const handleDetailMenu = (event) => {
+  const handleDetailMenu = () => {
     setOpen(null);
-    console.log("I'm here");
-    console.log(currentDataRow);
     setcurentUser(currentDataRow);
   };
 
@@ -103,20 +97,10 @@ export default function UserTableRow({
   const handleDelete = async () => {
     setLoadingDelete(true);
     try {
-      const token = localStorage.getItem('token');
-
-      // Send DELETE request to delete the user
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/member/delete/${id}`, {
-        headers: {
-          Authorization: `${token}`, // Include the token in the Authorization header
-        },
-      });
-
-      // Refresh users after successful deletion
+      await api.delete(`/member/delete/${id}`);
       fetchUsers();
-      console.log('User deleted successfully:', response.data);
     } catch (error) {
-      console.error('Error deleting user:', error);
+      // Handled by api interceptor
     } finally {
       setLoadingDelete(false);
       setConfirmationOpen(false);
@@ -128,16 +112,10 @@ export default function UserTableRow({
     setLoadingActivate(true);
     try {
       setOpen(null);
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/member/activate/${id}`, null, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      await api.patch(`/member/activate/${id}`, null);
       fetchUsers();
-      console.log('User activated successfully:', response.data);
     } catch (error) {
-      console.error('Error activating user:', error);
+      // Handled by api interceptor
     } finally {
       setLoadingActivate(false);
       setConfirmationActivateOpen(false);
@@ -149,16 +127,10 @@ export default function UserTableRow({
     setLoadingActivate(true);
     try {
       setOpen(null);
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/member/deactivate/${id}`, null, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      await api.patch(`/member/deactivate/${id}`, null);
       fetchUsers();
-      console.log('User deactivated successfully:', response.data);
     } catch (error) {
-      console.error('Error deactivating user:', error);
+      // Handled by api interceptor
     } finally {
       setLoadingActivate(false);
       setConfirmationActivateOpen(false);
@@ -175,7 +147,7 @@ export default function UserTableRow({
 
         <TableCell component="th" scope="row" padding="none">
           <Stack direction="row" alignItems="center" spacing={2}>
-          <Avatar alt={name} src={imageSrc} />
+            <Avatar alt={name} src={imageSrc} />
             <Typography
               sx={{ cursor: 'pointer' }}
               onClick={handleDetailMenu}
@@ -278,12 +250,7 @@ export default function UserTableRow({
           <Button onClick={() => setConfirmationOpen(false)} color="primary">
             Cancel
           </Button>
-          <LoadingButton
-            onClick={handleDelete}
-            color="error"
-            loading={loadingDelete}
-            autoFocus
-          >
+          <LoadingButton onClick={handleDelete} color="error" loading={loadingDelete} autoFocus>
             Delete
           </LoadingButton>
         </DialogActions>
@@ -299,8 +266,6 @@ export default function UserTableRow({
         onConfirm={status === 'active' ? handleDeactivate : handleActivate}
         loading={loadingActivate} // Pass loading state to dialog
       />
-
-    
 
       {/* Plan Dialog */}
 

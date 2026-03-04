@@ -10,12 +10,6 @@ import {
 } from '@mui/material';
 
 export const AccountProfile = ({ userDetails }) => {
-  // Initialize user state with default values
-  console.log(userDetails);
-  console.log(userDetails);
-  console.log(userDetails);
-  console.log(userDetails);
-  console.log(userDetails);
   const [user, setUser] = useState({
     avatar: '/assets/images/avatars/avatar_1.jpg',
     email: '',
@@ -39,12 +33,6 @@ export const AccountProfile = ({ userDetails }) => {
       });
     }
   }, [userDetails]);
-
-  // Additional logging for debugging
-  console.log("Current User:");
-  console.log(userDetails);
-  console.log("User State:");
-  console.log(user);
 
   return (
     <Card>

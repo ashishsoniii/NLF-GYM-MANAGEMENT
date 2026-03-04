@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
@@ -7,6 +6,8 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+
+import api from 'src/api/axios';
 
 
 export default function NewUserForm({ setClickedTitle }) {
@@ -43,10 +44,9 @@ export default function NewUserForm({ setClickedTitle }) {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/plan/active`);
+      const response = await api.get('/plan/active');
       setPlans(response.data);
     } catch (errors) {
-      console.error('Error fetching plans:', errors);
       setError('Error fetching plans');
     }
   };
@@ -80,7 +80,6 @@ export default function NewUserForm({ setClickedTitle }) {
         expiryDate: calculateExpiryDate(new Date(value), durationInMonths),
       });
     } else {
-      console.error('No plan selected');
       setError('Please select a membership plan first');
     }
   };
@@ -100,8 +99,6 @@ export default function NewUserForm({ setClickedTitle }) {
 
     if (currentSelectedPlan) {
       setSelectedPlan(currentSelectedPlan);
-      console.log(currentSelectedPlan);
-
       // Ensure joiningDate is in the correct format (YYYY-MM-DD)
       const formattedJoiningDate = userData.joiningDate.split('T')[0];
 
@@ -144,8 +141,6 @@ export default function NewUserForm({ setClickedTitle }) {
         },
       ];
 
-      console.log('Initial payments:', payments);
-
       setUserData({
         ...userData,
         membershipPlan: value,
@@ -156,7 +151,6 @@ export default function NewUserForm({ setClickedTitle }) {
         payments,
       });
     } else {
-      console.error('Selected plan not found');
       setError('Selected plan not found');
     }
   };
@@ -165,8 +159,6 @@ export default function NewUserForm({ setClickedTitle }) {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-
       const formData = new FormData();
 
       
@@ -184,14 +176,7 @@ export default function NewUserForm({ setClickedTitle }) {
         }
       });
 
-      console.log("Oi'm here")
-      console.log(formData)
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/member/add`, formData, {
-        headers: {
-          Authorization: token,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await api.post('/member/add', formData);
 
 
 
@@ -205,9 +190,6 @@ export default function NewUserForm({ setClickedTitle }) {
       //     Authorization: token,
       //   },
       // });
-      console.log(userData);
-      console.log(userData);
-      console.log('User added successfully:', response.data);
       setUserData({
         name: '',
         email: '',
@@ -231,8 +213,7 @@ export default function NewUserForm({ setClickedTitle }) {
       setError('User Added Successfully');
       setClickedTitle('All Users');
     } catch (errors) {
-      console.error('Error adding user:', errors);
-      setError(errors.response.data.error);
+      setError(errors.response?.data?.error || 'Error adding user');
     } finally {
       setLoading(false); // Set loading to false when the login completes
     }

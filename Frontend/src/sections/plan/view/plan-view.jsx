@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import { Grid } from '@mui/material';
@@ -10,6 +9,8 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+
+import api from 'src/api/axios';
 
 import Scrollbar from 'src/components/scrollbar';
 
@@ -55,11 +56,10 @@ export default function PlanPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/plan`); // Replace with your API endpoint
+      const response = await api.get('/plan');
       setPlans(response.data);
-      console.log('Error fetcaing plans:', response.data);
     } catch (error) {
-      console.error('Error fetcaing plans:', error);
+      // Handled by api interceptor
     }
   };
 

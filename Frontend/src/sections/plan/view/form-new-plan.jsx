@@ -1,4 +1,3 @@
-import axios from 'axios';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
@@ -6,6 +5,8 @@ import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+
+import api from 'src/api/axios';
 
 
 export default function AddPlanForm({ setClickedTitle }) {
@@ -25,34 +26,19 @@ export default function AddPlanForm({ setClickedTitle }) {
   };
 
   const handleSubmit = async () => {
-    setLoading(true); 
-
+    setLoading(true);
     try {
-      // Retrieve the authentication token from local storage
-      const token = localStorage.getItem('token');
-
-      // Send POST request to add plan with authorization header
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/plan`, planData, {
-        headers: {
-          Authorization: `${token}`, // Include the token in the Authorization header
-        },
-      });
-
-      console.log('Plan added successfully:', response.data);
-      // Reset form fields after submission
+      await api.post('/plan', planData);
       setPlanData({
         name: '',
         duration: '',
         price: '',
         description: '',
       });
-      // Clear any previous errors
       setError('Plan Added Successfully');
       setClickedTitle('All Plans');
     } catch (error) {
-      console.error('Error adding plan:', error);
-      // Display error message
-      setError(error.response.data.error);
+      setError(error.response?.data?.error || error.message);
     }
     finally {
       setLoading(false); // Set loading to false when the login completes

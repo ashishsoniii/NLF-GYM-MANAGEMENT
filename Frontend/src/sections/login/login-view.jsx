@@ -49,11 +49,8 @@ export default function AuthView() {
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('phone', response.data.phone);
         router.push('../');
-      } else {
-        console.error('Login failed:', response.data.error);
       }
     } catch (errorz) {
-      console.error('Error:', errorz);
       setError(errorz.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
@@ -74,11 +71,8 @@ export default function AuthView() {
       if (response.status === 201) {
         setError('You are Registered Successfully, Please Login!');
         router.push('/login');
-      } else {
-        console.error('Registration failed:', response.data.error);
       }
     } catch (errorz) {
-      console.error('Error:', errorz);
       setError(errorz.response?.data?.error || 'Registration failed');
     } finally {
       setLoading(false);
@@ -121,11 +115,7 @@ export default function AuthView() {
           <p>{error}</p>
         </Stack>
       )}
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
-        <Link variant="subtitle2" underline="hover">
-          Forgot password?
-        </Link>
-      </Stack>
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }} />
       <LoadingButton
         fullWidth
         size="large"

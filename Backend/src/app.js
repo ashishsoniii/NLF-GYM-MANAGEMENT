@@ -1,21 +1,22 @@
+require("dotenv").config();
+
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
+
+const dbConfig = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const planRoutes = require("./routes/planRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const statisticsRoutes = require("./routes/statisticsRoutes");
-const dbConfig = require("./config/database"); // Import the database configuration
-
-require("dotenv").config();
-
-var cors = require("cors");
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(express.json());
-
+// Allow all origins for now (restrict FRONTEND_URL in production)
 app.use(cors());
+
+app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/plan", planRoutes);
@@ -40,4 +41,13 @@ dbConfig.mongoose.connection.on(
 );
 app.get("/", (req, res) => {
   res.send(`<h1>Home Page</h1>`);
+});
+
+// Global error handler (must be last)
+app.use((err, req, res, next) => {
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ error: "Origin not allowed" });
+  }
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "An error occurred" });
 });

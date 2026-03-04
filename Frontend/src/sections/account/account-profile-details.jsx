@@ -17,9 +17,6 @@ import PlanPage from './plan/view/plan-view';
 // const user = window.sessionStorage.getItem("user");
 
 export const AccountProfileDetails = ({ curentUser }) => {
-  console.log('edr hi ');
-  console.log(curentUser);
-  console.log(curentUser);
   const [values, setValues] = useState({
     name: curentUser.name,
     phone: curentUser.phone,
