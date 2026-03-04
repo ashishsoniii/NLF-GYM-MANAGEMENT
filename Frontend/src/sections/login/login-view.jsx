@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { useState } from 'react';
+
+import api from 'src/api/axios';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -39,7 +40,7 @@ export default function AuthView() {
     const loginPassword = autoLogin ? 'admin123' : password;
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/adminLogin`, {
+      const response = await api.post('/auth/adminLogin', {
         email: loginEmail,
         password: loginPassword,
       });
@@ -60,7 +61,7 @@ export default function AuthView() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/adminRegistration`, {
+      const response = await api.post('/auth/adminRegistration', {
         name,
         email,
         password,
