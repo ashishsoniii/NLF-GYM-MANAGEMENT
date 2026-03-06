@@ -1,0 +1,12 @@
+# Netlify config for NLF Gym UI (SPA)
+# If this repo root is the site root, set Base directory to "Frontend" in Netlify UI.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: serve index.html for all routes so React Router can handle /, /member, /admin, etc.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

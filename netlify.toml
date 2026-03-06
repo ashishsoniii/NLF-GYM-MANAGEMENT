@@ -1,0 +1,13 @@
+# Netlify config — UI lives in Frontend/
+# Build and publish the Frontend SPA; redirects allow direct access to routes like /, /member, /admin.
+
+[build]
+  base = "Frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: serve index.html for all routes (/, /member, /admin, etc.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
