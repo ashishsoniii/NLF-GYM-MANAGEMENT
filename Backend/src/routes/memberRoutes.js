@@ -963,10 +963,12 @@ router.post("/payment/create-order", memberAuthMiddleware, async (req, res) => {
     }
     const amountPaise = Math.round(plan.price * 100);
     const instance = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    // Razorpay receipt max 40 chars
+    const receipt = `m${req.member._id.toString().slice(-8)}p${planId.toString().slice(-8)}${Date.now().toString().slice(-8)}`;
     const order = await instance.orders.create({
       amount: amountPaise,
       currency: "INR",
-      receipt: `member_${req.member._id}_plan_${planId}_${Date.now()}`,
+      receipt,
     });
     res.status(200).json({
       orderId: order.id,
