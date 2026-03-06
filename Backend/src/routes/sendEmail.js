@@ -6,6 +6,20 @@ const GREETING_TIMEOUT_MS = 5000;
 /** @returns {true | { sent: false, code: string }} */
 const sendEmail = async (to, subject, html) => {
   const from = process.env.EMAIL || "noreply@nlfgym.com";
+  const emailConfigured = !!process.env.EMAIL && !!process.env.EMAIL_PASSWORD;
+  console.log("[sendEmail] Attempting to send email:", {
+    to: to?.slice(0, 30),
+    subject,
+    from,
+    emailConfigured,
+    emailUser: process.env.EMAIL ? `${process.env.EMAIL.slice(0, 5)}...` : "(not set)",
+  });
+
+  if (!emailConfigured) {
+    console.error("[sendEmail] EMAIL or EMAIL_PASSWORD env vars not set!");
+    return { sent: false, code: "EMAIL_NOT_CONFIGURED" };
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -23,12 +37,18 @@ const sendEmail = async (to, subject, html) => {
       subject,
       html,
     });
-    console.log("Email sent:", info.messageId);
+    console.log("[sendEmail] Email sent successfully:", { messageId: info.messageId, to: to?.slice(0, 30) });
     return true;
   } catch (error) {
     const code = error.code || "EMAIL_ERROR";
     const message = error.message || String(error);
-    console.error("Error sending email:", { code, message, to: to?.slice(0, 20) + "..." });
+    console.error("[sendEmail] Failed to send email:", {
+      code,
+      message,
+      to: to?.slice(0, 30),
+      subject,
+      stack: error.stack?.split("\n").slice(0, 3).join(" | "),
+    });
     return { sent: false, code };
   }
 };
@@ -65,6 +85,22 @@ const sendEmail = async (to, subject, html) => {
 /** @returns {true | { sent: false, code: string }} */
 const sendEmailwithAttachment = async (to, subject, html, attachment) => {
   const from = process.env.EMAIL || "noreply@nlfgym.com";
+  const emailConfigured = !!process.env.EMAIL && !!process.env.EMAIL_PASSWORD;
+  const hasAttachment = !!attachment;
+  console.log("[sendEmailWithAttachment] Attempting to send email:", {
+    to: to?.slice(0, 30),
+    subject,
+    from,
+    hasAttachment,
+    emailConfigured,
+    emailUser: process.env.EMAIL ? `${process.env.EMAIL.slice(0, 5)}...` : "(not set)",
+  });
+
+  if (!emailConfigured) {
+    console.error("[sendEmailWithAttachment] EMAIL or EMAIL_PASSWORD env vars not set!");
+    return { sent: false, code: "EMAIL_NOT_CONFIGURED" };
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -85,12 +121,18 @@ const sendEmailwithAttachment = async (to, subject, html, attachment) => {
         ? [{ filename: attachment.filename, content: attachment.content }]
         : [],
     });
-    console.log("Email sent:", info.messageId);
+    console.log("[sendEmailWithAttachment] Email sent successfully:", { messageId: info.messageId, to: to?.slice(0, 30) });
     return true;
   } catch (error) {
     const code = error.code || "EMAIL_ERROR";
     const message = error.message || String(error);
-    console.error("Error sending email:", { code, message, to: to?.slice(0, 20) + "..." });
+    console.error("[sendEmailWithAttachment] Failed to send email:", {
+      code,
+      message,
+      to: to?.slice(0, 30),
+      subject,
+      stack: error.stack?.split("\n").slice(0, 3).join(" | "),
+    });
     return { sent: false, code };
   }
 };
