@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-import { Grid } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -10,9 +11,9 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import api from 'src/api/axios';
-
 import Scrollbar from 'src/components/scrollbar';
+
+import api from 'src/api/axios';
 
 import TableNoData from '../email-no-data';
 import SendEmailForm from './form-new-email';
@@ -23,12 +24,22 @@ import AppWidgetSummary from '../app-widget-summary';
 import UserTableToolbar from '../email-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
+const EMAIL_CATEGORIES = [
+  { value: '', label: 'All' },
+  { value: 'broadcast', label: 'Broadcast' },
+  { value: 'otp', label: 'OTP' },
+  { value: 'welcome', label: 'Welcome' },
+  { value: 'invoice', label: 'Invoice' },
+  { value: 'custom', label: 'Custom' },
+];
+
 // ----------------------------------------------------------------------
 
 export default function EmailPage() {
   const [page, setPage] = useState(0);
 
   const [clickedTitle, setClickedTitle] = useState('All Email');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   const [plans, setPlans] = useState([]);
 
@@ -36,7 +47,7 @@ export default function EmailPage() {
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState('sentAt');
 
   const [filterName, setFilterName] = useState('');
 
@@ -54,22 +65,23 @@ export default function EmailPage() {
     }
   };
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
-      const response = await api.get('/member/emails');
+      const params = categoryFilter ? { category: categoryFilter } : {};
+      const response = await api.get('/member/emails', { params });
       setPlans(response.data.emails ?? []);
     } catch (error) {
       // Error handled by api interceptor or component
     }
-  };
+  }, [categoryFilter]);
 
   useEffect(() => {
-    fetchPlans(); // Fetch plans when the component mounts
-  }, [clickedTitle]); // Empty dependency array ensures this effect runs only once
+    fetchPlans();
+  }, [clickedTitle, categoryFilter, fetchPlans]);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = plans.map((n) => n.name);
+      const newSelecteds = plans.map((n) => n.nameTo);
       setSelected(newSelecteds);
       return;
     }
@@ -156,6 +168,19 @@ export default function EmailPage() {
       <Card>
         {clickedTitle === 'All Email' && (
           <>
+            <Stack direction="row" flexWrap="wrap" gap={1} sx={{ px: 2, pt: 2, pb: 1 }}>
+              {EMAIL_CATEGORIES.map((cat) => (
+                <Chip
+                  key={cat.value || 'all'}
+                  label={cat.label}
+                  onClick={() => setCategoryFilter(cat.value)}
+                  color={categoryFilter === cat.value ? 'primary' : 'default'}
+                  variant={categoryFilter === cat.value ? 'filled' : 'outlined'}
+                  size="small"
+                  sx={{ textTransform: 'capitalize' }}
+                />
+              ))}
+            </Stack>
             <UserTableToolbar
               numSelected={selected.length}
               filterName={filterName}
@@ -172,11 +197,11 @@ export default function EmailPage() {
                     onRequestSort={handleSort}
                     onSelectAllClick={handleSelectAllClick}
                     headLabel={[
-                      // { id: '_id', label: 'Plan Id' },
-                      { id: 'name', label: 'Name' },
-                      { id: 'email', label: 'Email' },
+                      { id: 'nameTo', label: 'Name' },
+                      { id: 'emailTo', label: 'Recipients' },
+                      { id: 'category', label: 'Category' },
                       { id: 'subject', label: 'Subject' },
-                      { id: 'sendAt', label: 'Send At', align: 'center' },
+                      { id: 'sentAt', label: 'Sent at', align: 'center' },
                     ]}
                   />
                   <TableBody>
@@ -192,8 +217,8 @@ export default function EmailPage() {
                           price={row.emailTo}
                           // status={row.isActive ? 'active' : 'inactive'}
                           // avatarUrl={row.avatarUrl}
-                          selected={selected.indexOf(row.name) !== -1}
-                          handleClick={(event) => handleClick(event, row.name)}
+                          selected={selected.indexOf(row.nameTo) !== -1}
+                          handleClick={(event) => handleClick(event, row.nameTo)}
                         />
                       ))}
 

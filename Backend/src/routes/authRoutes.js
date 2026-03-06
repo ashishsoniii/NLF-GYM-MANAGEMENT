@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer"); // For sending emails
 const Trainer = require("../models/Trainer");
 const Admin = require("../models/Admin");
+const Member = require("../models/Member");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -222,6 +223,27 @@ router.post("/changePassword",  async (req, res) => {
   }
 });
 
+
+// GET /auth/email-type?email=... - Returns whether email is admin or member (for unified login)
+router.get("/email-type", async (req, res) => {
+  try {
+    const email = (req.query.email || req.body?.email || "").toString().trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    const admin = await Admin.findOne({ email });
+    if (admin) {
+      return res.status(200).json({ type: "admin" });
+    }
+    const member = await Member.findOne({ email });
+    if (member) {
+      return res.status(200).json({ type: "member" });
+    }
+    return res.status(404).json({ type: null, error: "No account found with this email." });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 
 // admin login
 

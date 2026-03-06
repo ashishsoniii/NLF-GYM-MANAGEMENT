@@ -200,6 +200,16 @@ router.get("/active", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+// List active plans (no auth – for member portal)
+router.get("/list-active", async (req, res) => {
+  try {
+    const plans = await Plan.find({ isActive: true }).select("name duration price description");
+    res.json(plans);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get a specific plan by ID (auth required)
 router.get("/:id", adminAuthMiddleware, async (req, res) => {
   try {

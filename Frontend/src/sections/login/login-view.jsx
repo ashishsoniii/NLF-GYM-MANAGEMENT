@@ -3,8 +3,8 @@ import { useState } from 'react';
 import api from 'src/api/axios';
 
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -19,6 +19,7 @@ import { bgGradient } from 'src/theme/css';
 
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
+import { RouterLink } from 'src/routes/components';
 
 export default function AuthView() {
   const theme = useTheme();
@@ -49,7 +50,7 @@ export default function AuthView() {
         localStorage.setItem('email', response.data.email);
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('phone', response.data.phone);
-        router.push('../');
+        router.push('/admin');
       }
     } catch (errorz) {
       setError(errorz.response?.data?.error || 'Login failed');
@@ -71,7 +72,7 @@ export default function AuthView() {
       });
       if (response.status === 201) {
         setError('You are Registered Successfully, Please Login!');
-        router.push('/login');
+        router.push('/admin/login');
       }
     } catch (errorz) {
       setError(errorz.response?.data?.error || 'Registration failed');
@@ -155,6 +156,11 @@ export default function AuthView() {
           </Link>
         </Typography>
       </Stack>
+      <Typography variant="body2" sx={{ textAlign: 'center', mt: 2 }}>
+        <Link component={RouterLink} to="/member/login">
+          Member? Login to member portal
+        </Link>
+      </Typography>
     </>
   );
 

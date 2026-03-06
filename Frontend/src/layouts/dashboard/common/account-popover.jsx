@@ -39,7 +39,7 @@ export default function AccountPopover() {
     localStorage.removeItem('email');
     localStorage.removeItem('name');
     localStorage.removeItem('phone');
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     setOpen(null);
   };
 

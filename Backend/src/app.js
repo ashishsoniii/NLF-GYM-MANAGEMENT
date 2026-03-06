@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 const dbConfig = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
+const memberAuthRoutes = require("./routes/memberAuthRoutes");
 const planRoutes = require("./routes/planRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const statisticsRoutes = require("./routes/statisticsRoutes");
@@ -26,6 +27,7 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 
 app.use("/auth", authRoutes);
+app.use("/member-auth", memberAuthRoutes);
 app.use("/plan", planRoutes);
 app.use("/member", memberRoutes);
 app.use("/stat", statisticsRoutes);

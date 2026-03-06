@@ -1,0 +1,40 @@
+---
+description: Member portal (customer-facing) requirements and conventions
+alwaysApply: true
+---
+
+# Member Portal – Core Rules
+
+- **Separate personas**
+  - Keep **admin** UI and **member** (customer) UI logically and visually separate.
+  - Admin continues to use existing `/login` and dashboard.
+  - Members use new routes under `/member` (e.g. `/member/login`, `/member/register`, `/member`).
+
+- **Member authentication**
+  - Members authenticate via **email + OTP**, not passwords.
+  - OTP is short-lived, stored hashed with an expiry, and sent via the existing email infrastructure.
+  - Successful OTP verification issues a **member JWT** with at least `memberId` and `role: 'member'`.
+
+- **Authorization**
+  - Add and use a dedicated `memberAuthMiddleware` for member-facing APIs.
+  - Member endpoints must never rely on admin auth or allow admin-only operations.
+
+- **Immutable vs editable fields**
+  - Treat **email, name, and phone** as immutable for members in the portal UI and APIs.
+  - Other sensitive fields (e.g. `joiningDate`, plan identifiers, historical payments) are also immutable from the member side.
+  - Only allow members to edit clearly defined safe fields (e.g. address, emergency contact, workout preferences).
+
+- **Member-facing APIs**
+  - Prefer member-centric endpoints like `/member/me`, `/member/me/payments`, and `/member/payment/*` rather than reusing admin list endpoints.
+  - Ensure these endpoints only return the data of the authenticated member.
+
+- **Razorpay integration**
+  - All member-initiated payments should go through Razorpay.
+  - Backend is the single source of truth for verifying Razorpay signatures and updating member payments/expiry.
+  - Store Razorpay keys in environment variables and never hard-code them.
+
+- **Frontend UX**
+  - Build member UI with a **simple, modern, and mobile-friendly** design.
+  - Make it clear when data is read-only (immutable) vs editable.
+  - Use clear feedback for OTP sending, verification errors, and payment success/failure.
+

@@ -1,18 +1,17 @@
 import axios from 'axios';
 
-// Never leave undefined or requests become /undefined/... on current origin
 const baseURL = import.meta.env.VITE_BACKEND_URL || '';
 
-const api = axios.create({
+const memberApi = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-api.interceptors.request.use(
+memberApi.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('memberToken');
     if (token) {
       config.headers.Authorization = token;
     }
@@ -24,18 +23,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-api.interceptors.response.use(
+memberApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('email');
-      localStorage.removeItem('name');
-      localStorage.removeItem('phone');
+      localStorage.removeItem('memberToken');
+      localStorage.removeItem('memberName');
+      localStorage.removeItem('memberEmail');
       window.location.href = '/';
     }
     return Promise.reject(error);
   }
 );
 
-export default api;
+export default memberApi;

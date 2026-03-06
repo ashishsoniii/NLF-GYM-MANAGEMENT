@@ -8,7 +8,7 @@ import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
-const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
+const Logo = forwardRef(({ disabledLink = false, href = '/', sx, ...other }, ref) => {
   // OR using local (public folder)
   // -------------------------------------------------------
   // const logo = (
@@ -40,7 +40,7 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   }
 
   return (
-    <Link component={RouterLink} href="/" sx={{ display: 'contents' }}>
+    <Link component={RouterLink} href={href} sx={{ display: 'contents' }}>
       {logo}
     </Link>
   );
@@ -48,6 +48,7 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
 
 Logo.propTypes = {
   disabledLink: PropTypes.bool,
+  href: PropTypes.string,
   sx: PropTypes.object,
 };
 

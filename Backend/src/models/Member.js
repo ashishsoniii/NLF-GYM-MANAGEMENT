@@ -47,6 +47,7 @@ const memberSchema = new mongoose.Schema(
       enum: ["Fitness", "Weight Lifting", "Cardio", "Yoga", "General"],
       default: "Fitness",
     },
+    emergencyContact: String,
     isActive: { type: Boolean, default: true },
     notes: String,
     profileImage: Buffer,

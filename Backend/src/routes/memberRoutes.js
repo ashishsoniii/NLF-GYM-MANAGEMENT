@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const express = require("express");
 const router = express.Router();
 const Member = require("../models/Member");
@@ -5,6 +6,7 @@ const { sendEmail, sendEmailwithAttachment } = require("./sendEmail");
 const jsPDF = require("jspdf");
 const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
+const memberAuthMiddleware = require("../middleware/memberAuthMiddleware");
 const { newUser } = require("./emailTemplates/newUser");
 const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
 const puppeteer = require("puppeteer");
@@ -14,11 +16,13 @@ const multer = require("multer");
 const upload = require("../middleware/multer");
 
 
-async function saveEmailRecord(userId, subject, emailContent) {
+/** @param category one of: 'broadcast' | 'otp' | 'welcome' | 'invoice' | 'custom' */
+async function saveEmailRecord(userId, subject, emailContent, category = 'broadcast') {
   const emailRecord = new Email({
     nameTo: userId,
-    subject: subject,
+    subject,
     emailTo: emailContent,
+    category,
   });
   await emailRecord.save();
 }
@@ -179,7 +183,7 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       });
     }
 
-    await saveEmailRecord(newMember.name, subject, email);
+    await saveEmailRecord(newMember.name, subject, email, 'welcome');
 
     res.status(201).json({
       message: "Member added and email sent successfully",
@@ -733,7 +737,7 @@ router.post("/addPayment/:id", adminAuthMiddleware, async (req, res) => {
       }
 
       // Save email record only if email was sent
-      await saveEmailRecord(member.name, subject, member.email);
+      await saveEmailRecord(member.name, subject, member.email, 'invoice');
     } catch (emailError) {
       console.error("Error during email processing:", emailError);
       // Continue with the process even if email fails
@@ -815,8 +819,16 @@ router.get("/expiredUser/:days", adminAuthMiddleware, async (req, res) => {
 // gets all sent emails!
 router.get("/emails", adminAuthMiddleware, async (req, res) => {
   try {
-    // Fetch all emails sorted by sentAt in descending order
-    const emails = await Email.find().sort({ sentAt: -1 });
+    const { category } = req.query;
+    const filter = {};
+    if (category && ['broadcast', 'otp', 'welcome', 'invoice', 'custom'].includes(category)) {
+      if (category === 'broadcast') {
+        filter.$or = [{ category: 'broadcast' }, { category: { $exists: false } }];
+      } else {
+        filter.category = category;
+      }
+    }
+    const emails = await Email.find(filter).sort({ sentAt: -1 });
 
     res.status(200).json({ emails });
   } catch (error) {
@@ -825,6 +837,209 @@ router.get("/emails", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+
+// ---------- Member portal (customer-facing) ----------
+
+// Self-registration (no auth)
+router.post("/self-register", async (req, res) => {
+  try {
+    const { name, email, phone, address, dateOfBirth, gender, workoutType, emergencyContact } = req.body;
+    if (!name || !email || !phone) {
+      return res.status(400).json({ error: "Name, email and phone are required" });
+    }
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const existing = await Member.findOne({ email: normalizedEmail });
+    if (existing) {
+      return res.status(400).json({ error: "You are already registered. Please login." });
+    }
+    const now = new Date();
+    const newMember = new Member({
+      name: String(name).trim(),
+      email: normalizedEmail,
+      phone: String(phone).trim(),
+      address: address ? String(address).trim() : undefined,
+      dateOfBirth: dateOfBirth || undefined,
+      gender: gender || undefined,
+      workoutType: workoutType || "Fitness",
+      emergencyContact: emergencyContact ? String(emergencyContact).trim() : undefined,
+      joiningDate: now,
+      expiryDate: now,
+      latestPaymentDate: now,
+      latestPaymentAmount: 0,
+      latestPlanName: "No Plan",
+      payments: [],
+      isActive: true,
+    });
+    await newMember.save();
+    res.status(201).json({
+      message: "Registration successful. Please login with your email using OTP.",
+      memberId: newMember._id,
+    });
+  } catch (error) {
+    console.error("Self-register error:", error);
+    res.status(500).json({ error: "Registration failed. Please try again." });
+  }
+});
+
+// Current member profile (member auth)
+router.get("/me", memberAuthMiddleware, async (req, res) => {
+  try {
+    const member = req.member;
+    const obj = member.toObject();
+    delete obj.profileImage;
+    delete obj.__v;
+    res.status(200).json(obj);
+  } catch (error) {
+    console.error("GET /me error:", error);
+    res.status(500).json({ error: "Failed to load profile" });
+  }
+});
+
+const MEMBER_EDITABLE_FIELDS = ["address", "dateOfBirth", "gender", "workoutType", "emergencyContact", "notes"];
+
+router.patch("/me", memberAuthMiddleware, async (req, res) => {
+  try {
+    const updates = {};
+    for (const key of MEMBER_EDITABLE_FIELDS) {
+      if (req.body[key] !== undefined) {
+        if (key === "dateOfBirth") {
+          updates[key] = req.body[key] ? new Date(req.body[key]) : null;
+        } else {
+          updates[key] = typeof req.body[key] === "string" ? req.body[key].trim() : req.body[key];
+        }
+      }
+    }
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No allowed fields to update" });
+    }
+    const member = await Member.findByIdAndUpdate(
+      req.member._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+    const obj = member.toObject();
+    delete obj.profileImage;
+    delete obj.__v;
+    res.status(200).json(obj);
+  } catch (error) {
+    console.error("PATCH /me error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+router.get("/me/payments", memberAuthMiddleware, async (req, res) => {
+  try {
+    const payments = (req.member.payments || []).map((p) => ({
+      amount: p.amount,
+      date: p.date,
+      joiningDate: p.joiningDate,
+      expiryDate: p.expiryDate,
+      paymentMethod: p.paymentMethod,
+      plan: p.plan,
+    }));
+    res.status(200).json({ payments });
+  } catch (error) {
+    console.error("GET /me/payments error:", error);
+    res.status(500).json({ error: "Failed to load payments" });
+  }
+});
+
+// Razorpay: create order (member auth)
+router.post("/payment/create-order", memberAuthMiddleware, async (req, res) => {
+  try {
+    const Razorpay = require("razorpay");
+    const { planId } = req.body;
+    if (!planId) {
+      return res.status(400).json({ error: "Plan ID is required" });
+    }
+    const plan = await Plan.findById(planId);
+    if (!plan || !plan.isActive) {
+      return res.status(400).json({ error: "Invalid or inactive plan" });
+    }
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      return res.status(503).json({ error: "Payment is not configured" });
+    }
+    const amountPaise = Math.round(plan.price * 100);
+    const instance = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    const order = await instance.orders.create({
+      amount: amountPaise,
+      currency: "INR",
+      receipt: `member_${req.member._id}_plan_${planId}_${Date.now()}`,
+    });
+    res.status(200).json({
+      orderId: order.id,
+      amount: amountPaise,
+      currency: "INR",
+      razorpayKey: keyId,
+      plan: { _id: plan._id, name: plan.name, duration: plan.duration, price: plan.price },
+    });
+  } catch (error) {
+    console.error("Create order error:", error);
+    res.status(500).json({ error: "Failed to create order" });
+  }
+});
+
+// Razorpay: verify payment and update member
+router.post("/payment/verify", memberAuthMiddleware, async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !planId) {
+      return res.status(400).json({ error: "Missing payment details" });
+    }
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(503).json({ error: "Payment is not configured" });
+    }
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expected = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ error: "Invalid payment signature" });
+    }
+    const plan = await Plan.findById(planId);
+    if (!plan || !plan.isActive) {
+      return res.status(400).json({ error: "Invalid plan" });
+    }
+    const member = req.member;
+    const now = new Date();
+    const joiningDate = member.expiryDate && member.expiryDate > now ? member.expiryDate : now;
+    const expiryDate = new Date(joiningDate);
+    expiryDate.setMonth(expiryDate.getMonth() + plan.duration);
+    const paymentEntry = {
+      amount: plan.price,
+      date: now,
+      joiningDate,
+      expiryDate,
+      paymentMethod: "Online",
+      plan: {
+        planId: plan._id,
+        name: plan.name,
+        duration: plan.duration,
+        price: plan.price,
+      },
+    };
+    const updatedPayments = [...(member.payments || []), paymentEntry];
+    await Member.findByIdAndUpdate(member._id, {
+      $set: {
+        payments: updatedPayments,
+        membershipPlan: plan._id,
+        expiryDate,
+        latestPaymentDate: now,
+        latestPaymentAmount: plan.price,
+        latestPlanName: plan.name,
+      },
+    });
+    const updated = await Member.findById(member._id);
+    const obj = updated.toObject();
+    delete obj.profileImage;
+    delete obj.__v;
+    res.status(200).json({ message: "Payment successful", member: obj });
+  } catch (error) {
+    console.error("Payment verify error:", error);
+    res.status(500).json({ error: "Payment verification failed" });
+  }
+});
 
 // Route to send emails to users - everyone & custom
 router.post("/sendEmail", adminAuthMiddleware, async (req, res) => {
@@ -852,7 +1067,12 @@ router.post("/sendEmail", adminAuthMiddleware, async (req, res) => {
     for (const email of emailsToSend) {
       await sendEmail(email, subject, content);
     }
-    await saveEmailRecord(emailOption === 'everyone' ? 'everyone' : 'custom', subject, emailsToSend.join(', '));
+    await saveEmailRecord(
+      emailOption === 'everyone' ? 'everyone' : 'custom',
+      subject,
+      emailsToSend.join(', '),
+      emailOption === 'everyone' ? 'broadcast' : 'custom'
+    );
     
     res.status(200).json({ message: "Emails sent successfully" });
   } catch (error) {
