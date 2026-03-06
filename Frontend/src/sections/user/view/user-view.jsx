@@ -21,6 +21,7 @@ import TableNoData from '../table-no-data';
 import UserTableRow from '../user-table-row';
 import UserTableHead from '../user-table-head';
 import TableEmptyRows from '../table-empty-rows';
+import TableSkeleton from '../table-skeleton';
 import UserTableToolbar from '../user-table-toolbar';
 import AppWidgetSummary from '../app-widget-summary';
 import { emptyRows, applyFilter, getComparator } from '../utils';
@@ -39,6 +40,9 @@ export default function UserPage() {
   const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [tableLoading, setTableLoading] = useState(true);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+  const MIN_LOADING_MS = 400;
 
   // Reference to the AccountPage container
   const accountPageRef = useRef(null);
@@ -72,6 +76,8 @@ export default function UserPage() {
   };
 
   const fetchUsers = useCallback(async () => {
+    const startedAt = Date.now();
+    setTableLoading(true);
     try {
       const url =
         clickedTitle === 'expiredUser'
@@ -80,7 +86,13 @@ export default function UserPage() {
       const response = await api.get(url);
       setusers(response.data.members ?? []);
     } catch (error) {
-      // Handled by api interceptor
+      setusers([]);
+    } finally {
+      setHasFetchedOnce(true);
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, MIN_LOADING_MS - elapsed);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      setTableLoading(false);
     }
   }, [clickedTitle, selectExpiredFilter]);
 
@@ -325,38 +337,44 @@ export default function UserPage() {
                   />
 
                   <TableBody>
-                    {dataFiltered
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((row) => (
-                        <UserTableRow
-                          key={row._id}
-                          id={row._id}
-                          name={row.name}
-                          role={row.role}
-                          joiningDate={row.joiningDate}
-                          expiryDate={row.expiryDate}
-                          planName={row.latestPlanName}
-                          email={row.email}
-                          fetchUsers={fetchUsers}
-                          phone={row.phone}
-                          gender={row.gender}
-                          currentDataRow={row}
-                          company={row.company}
-                          setcurentUser={setcurentUser}
-                          avatarUrl={row.profileImage}
-                          status={row.isActive ? 'active' : 'deactivate'}
-                          isVerified={row.isActive}
-                          selected={selected.indexOf(row._id) !== -1}
-                          handleClick={(event) => handleClick(event, row._id)}
+                    {(tableLoading || (!hasFetchedOnce && (users ?? []).length === 0)) ? (
+                      <TableSkeleton rowCount={rowsPerPage} />
+                    ) : (
+                      <>
+                        {dataFiltered
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((row) => (
+                            <UserTableRow
+                              key={row._id}
+                              id={row._id}
+                              name={row.name}
+                              role={row.role}
+                              joiningDate={row.joiningDate}
+                              expiryDate={row.expiryDate}
+                              planName={row.latestPlanName}
+                              email={row.email}
+                              fetchUsers={fetchUsers}
+                              phone={row.phone}
+                              gender={row.gender}
+                              currentDataRow={row}
+                              company={row.company}
+                              setcurentUser={setcurentUser}
+                              avatarUrl={row.profileImage}
+                              status={row.isActive ? 'active' : 'deactivate'}
+                              isVerified={row.isActive}
+                              selected={selected.indexOf(row._id) !== -1}
+                              handleClick={(event) => handleClick(event, row._id)}
+                            />
+                          ))}
+
+                        <TableEmptyRows
+                          height={77}
+                          emptyRows={emptyRows(page, rowsPerPage, users.length)}
                         />
-                      ))}
 
-                    <TableEmptyRows
-                      height={77}
-                      emptyRows={emptyRows(page, rowsPerPage, users.length)}
-                    />
-
-                    {notFound && <TableNoData query={filterName} />}
+                        {notFound && <TableNoData query={filterName} />}
+                      </>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

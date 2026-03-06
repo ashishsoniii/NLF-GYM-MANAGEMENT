@@ -19,6 +19,7 @@ import TableNoData from '../table-no-data';
 import UserTableRow from '../plan-table-row';
 import UserTableHead from '../plan-table-head';
 import TableEmptyRows from '../table-empty-rows';
+import PlanTableSkeleton from '../table-skeleton';
 import UserTableToolbar from '../plan-table-toolbar';
 import AppWidgetSummary from '../app-widget-summary';
 import { emptyRows, applyFilter, getComparator } from '../utils';
@@ -42,6 +43,10 @@ export default function PlanPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [tableLoading, setTableLoading] = useState(true);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+  const MIN_LOADING_MS = 400;
+
   const handleCardClick = (title) => {
     setClickedTitle(title);
   };
@@ -55,17 +60,25 @@ export default function PlanPage() {
   };
 
   const fetchPlans = async () => {
+    const startedAt = Date.now();
+    setTableLoading(true);
     try {
       const response = await api.get('/plan');
       setPlans(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      // Handled by api interceptor
+      setPlans([]);
+    } finally {
+      setHasFetchedOnce(true);
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, MIN_LOADING_MS - elapsed);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      setTableLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPlans(); // Fetch plans when the component mounts
-  }, [clickedTitle]); // Empty dependency array ensures this effect runs only once
+    if (clickedTitle === 'All Plans') fetchPlans();
+  }, [clickedTitle]);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -183,30 +196,36 @@ export default function PlanPage() {
                     ]}
                   />
                   <TableBody>
-                    {dataFiltered
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((row) => (
-                        <UserTableRow
-                          fetchPlans={fetchPlans}
-                          key={row._id}
-                          id={row._id}
-                          name={row.name}
-                          duration={row.duration}
-                          description={row.description}
-                          price={row.price}
-                          status={row.isActive ? 'active' : 'inactive'}
-                          avatarUrl={row.avatarUrl}
-                          selected={selected.indexOf(row.name) !== -1}
-                          handleClick={(event) => handleClick(event, row.name)}
+                    {(tableLoading || (!hasFetchedOnce && plans.length === 0)) ? (
+                      <PlanTableSkeleton rowCount={rowsPerPage} />
+                    ) : (
+                      <>
+                        {dataFiltered
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((row) => (
+                            <UserTableRow
+                              fetchPlans={fetchPlans}
+                              key={row._id}
+                              id={row._id}
+                              name={row.name}
+                              duration={row.duration}
+                              description={row.description}
+                              price={row.price}
+                              status={row.isActive ? 'active' : 'inactive'}
+                              avatarUrl={row.avatarUrl}
+                              selected={selected.indexOf(row.name) !== -1}
+                              handleClick={(event) => handleClick(event, row.name)}
+                            />
+                          ))}
+
+                        <TableEmptyRows
+                          height={77}
+                          emptyRows={emptyRows(page, rowsPerPage, plans.length)}
                         />
-                      ))}
 
-                    <TableEmptyRows
-                      height={77}
-                      emptyRows={emptyRows(page, rowsPerPage, plans.length)}
-                    />
-
-                    {notFound && <TableNoData query={filterName} />}
+                        {notFound && <TableNoData query={filterName} />}
+                      </>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

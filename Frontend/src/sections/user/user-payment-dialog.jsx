@@ -35,18 +35,23 @@ function UserPaymentDialog({
   const [plans, setPlans] = useState([]);
   const [errorshow, setError] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [loading, setLoading] = useState(false); // State to track loading
+  const [loading, setLoading] = useState(false);
+  const [plansLoading, setPlansLoading] = useState(true);
 
   useEffect(() => {
     fetchPlans();
   }, []);
 
   const fetchPlans = async () => {
+    setPlansLoading(true);
     try {
       const response = await api.get('/plan/active');
-      setPlans(response.data);
+      setPlans(response.data ?? []);
     } catch (error) {
       setError('Error fetching plans');
+      setPlans([]);
+    } finally {
+      setPlansLoading(false);
     }
   };
 
@@ -188,8 +193,20 @@ function UserPaymentDialog({
                 handleChange(e);
                 handlePlanChange(e);
               }}
+              disabled={plansLoading}
               sx={{ mb: 2 }}
+              SelectProps={{
+                displayEmpty: true,
+                renderValue: (v) => {
+                  if (plansLoading) return 'Loading plans...';
+                  if (!v) return 'Select a plan';
+                  return plans.find((p) => p._id === v)?.name ?? '';
+                },
+              }}
             >
+              <MenuItem value="" disabled>
+                {plansLoading ? 'Loading plans...' : 'Select a plan'}
+              </MenuItem>
               {plans.map((plan) => (
                 <MenuItem key={plan._id} value={plan._id}>
                   {plan.name}
