@@ -8,6 +8,7 @@ import api from 'src/api/axios';
 import { AccountProfile } from 'src/sections/myAccount/account-profile';
 import AccountPasswordChange from 'src/sections/myAccount/account-password-change';
 import { AccountProfileDetails } from 'src/sections/myAccount/account-profile-details';
+import AdminListView from 'src/sections/myAccount/admin-list-view';
 
 const AccountPage = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -28,7 +29,7 @@ const AccountPage = () => {
   return (
     <>
       <Helmet>
-        <title>User | GYM</title>
+        <title>Account | GYM</title>
       </Helmet>
 
       <Box
@@ -57,6 +58,12 @@ const AccountPage = () => {
                   {userDetails && <AccountPasswordChange userID={userDetails._id} />}
                 </Grid>
               </Grid>
+            </div>
+            <div>
+              <AdminListView
+                currentUserRoles={userDetails?.roles}
+                currentUserId={userDetails?._id}
+              />
             </div>
           </Stack>
         </Container>

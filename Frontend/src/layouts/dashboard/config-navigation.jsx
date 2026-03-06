@@ -28,7 +28,7 @@ const navConfig = [
     icon: icon('ic_email'),
   },
   {
-    title: 'My Account',
+    title: 'Account',
     path: '/admin/myAccount',
     icon: icon('ic_userz'),
   },

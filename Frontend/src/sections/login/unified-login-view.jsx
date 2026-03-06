@@ -76,6 +76,9 @@ export default function UnifiedLoginView() {
       localStorage.setItem('email', res.data.email);
       localStorage.setItem('name', res.data.name);
       localStorage.setItem('phone', res.data.phone || '');
+      if (Array.isArray(res.data.role)) {
+        localStorage.setItem('roles', JSON.stringify(res.data.role));
+      }
       router.push('/admin');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');

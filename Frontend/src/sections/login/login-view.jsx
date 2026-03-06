@@ -50,6 +50,9 @@ export default function AuthView() {
         localStorage.setItem('email', response.data.email);
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('phone', response.data.phone);
+        if (Array.isArray(response.data.role)) {
+          localStorage.setItem('roles', JSON.stringify(response.data.role));
+        }
         router.push('/admin');
       }
     } catch (errorz) {

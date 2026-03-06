@@ -13,6 +13,14 @@ if (!secretKey) {
   throw new Error("JWT_SECRET environment variable is required");
 }
 
+const requireSuperAdmin = (req, res, next) => {
+  const roles = req.admin?.roles;
+  if (!Array.isArray(roles) || !roles.includes("Super Admin")) {
+    return res.status(403).json({ error: "Super Admin access required" });
+  }
+  next();
+};
+
 // Trainer Registration
 router.post("/trainerRegistration", adminAuthMiddleware, async (req, res) => {
   try {
@@ -110,6 +118,107 @@ router.post("/adminRegistration", async (req, res) => {
     res.status(201).json({ message: "Admin registered successfully", token });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// List all admins (auth required, no passwords)
+router.get("/admins", adminAuthMiddleware, async (req, res) => {
+  try {
+    const admins = await Admin.find().select("-password").sort({ createdAt: -1 }).lean();
+    res.status(200).json({ admins });
+  } catch (error) {
+    console.error("List admins error:", error);
+    res.status(500).json({ error: "Failed to fetch admins" });
+  }
+});
+
+// Add super admin (auth required)
+router.post("/admins", adminAuthMiddleware, async (req, res) => {
+  try {
+    const { name, email, phone, password, superAdmin } = req.body;
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ error: "Name, email, phone and password are required" });
+    }
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ error: "Email is already registered" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const roles = superAdmin ? ["Admin", "Super Admin"] : ["Admin"];
+    const newAdmin = new Admin({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      roles,
+      specialization: superAdmin ? "Super Admin" : "Admin",
+      commissionRate: 0,
+    });
+    await newAdmin.save();
+    const admin = await Admin.findById(newAdmin._id).select("-password").lean();
+    res.status(201).json({ message: "Admin created successfully", admin });
+  } catch (error) {
+    console.error("Add admin error:", error);
+    res.status(500).json({ error: error.message || "Failed to create admin" });
+  }
+});
+
+// Update admin (super admin only)
+router.patch("/admins/:id", adminAuthMiddleware, requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, phone, superAdmin } = req.body;
+    const admin = await Admin.findById(id);
+    if (!admin) return res.status(404).json({ error: "Admin not found" });
+    if (name !== undefined) admin.name = name;
+    if (email !== undefined) admin.email = email.toLowerCase();
+    if (phone !== undefined) admin.phone = phone;
+    if (typeof superAdmin === "boolean") {
+      admin.roles = superAdmin ? ["Admin", "Super Admin"] : ["Admin"];
+      admin.specialization = superAdmin ? "Super Admin" : "Admin";
+    }
+    await admin.save();
+    const updated = await Admin.findById(id).select("-password").lean();
+    res.status(200).json({ message: "Admin updated", admin: updated });
+  } catch (error) {
+    console.error("Update admin error:", error);
+    res.status(500).json({ error: error.message || "Failed to update admin" });
+  }
+});
+
+// Reset admin password (super admin only)
+router.post("/admins/:id/reset-password", adminAuthMiddleware, requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || String(newPassword).length < 1) {
+      return res.status(400).json({ error: "newPassword is required" });
+    }
+    const admin = await Admin.findById(id);
+    if (!admin) return res.status(404).json({ error: "Admin not found" });
+    admin.password = await bcrypt.hash(String(newPassword), 10);
+    await admin.save();
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ error: error.message || "Failed to reset password" });
+  }
+});
+
+// Delete admin (super admin only)
+router.delete("/admins/:id", adminAuthMiddleware, requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await Admin.findById(id);
+    if (!admin) return res.status(404).json({ error: "Admin not found" });
+    if (admin._id.toString() === req.admin._id.toString()) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+    await Admin.findByIdAndDelete(id);
+    res.status(200).json({ message: "Admin deleted" });
+  } catch (error) {
+    console.error("Delete admin error:", error);
+    res.status(500).json({ error: error.message || "Failed to delete admin" });
   }
 });
 
