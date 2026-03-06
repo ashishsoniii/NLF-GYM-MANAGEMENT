@@ -51,9 +51,14 @@ router.post('/send-otp', async (req, res) => {
     `;
     const subject = 'Your NLF Gym Login OTP';
     const sent = await sendEmail(normalizedEmail, subject, html);
-    if (!sent) {
+    if (sent !== true) {
       await MemberOtp.deleteMany({ email: normalizedEmail });
-      return res.status(500).json({ error: 'Failed to send OTP email. Try again later.' });
+      const isUnavailable = sent.code === 'ETIMEDOUT' || sent.code === 'ECONNREFUSED';
+      return res.status(isUnavailable ? 503 : 500).json({
+        error: isUnavailable
+          ? 'Email service is temporarily unavailable. Please try again in a moment.'
+          : 'Failed to send OTP email. Try again later.',
+      });
     }
 
     await Email.create({

@@ -175,8 +175,8 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
       emailSent = await sendEmail(email, subject, html);
     }
 
-    if (!emailSent) {
-      console.log("Failed to send email but member added successfully.");
+    if (emailSent !== true) {
+      console.warn("Failed to send email but member added successfully.", emailSent?.code);
       return res.status(201).json({
         message: "Member added successfully, but there was an error sending the email.",
         member: savedMember,
@@ -730,8 +730,8 @@ router.post("/addPayment/:id", adminAuthMiddleware, async (req, res) => {
         }
       );
 
-      if (!emailSent) {
-        console.log("Failed to send email, but proceeding without error.");
+      if (emailSent !== true) {
+        console.warn("Failed to send email, but proceeding without error.", emailSent?.code);
       } else {
         console.log("Email sent successfully.");
       }
@@ -1067,7 +1067,15 @@ router.post("/sendEmail", adminAuthMiddleware, async (req, res) => {
 
     // Send emails
     for (const email of emailsToSend) {
-      await sendEmail(email, subject, content);
+      const result = await sendEmail(email, subject, content);
+      if (result !== true) {
+        const isUnavailable = result.code === 'ETIMEDOUT' || result.code === 'ECONNREFUSED';
+        return res.status(isUnavailable ? 503 : 500).json({
+          error: isUnavailable
+            ? 'Email service is temporarily unavailable. Please try again later.'
+            : 'Failed to send email. Try again later.',
+        });
+      }
     }
     await saveEmailRecord(
       emailOption === 'everyone' ? 'everyone' : 'custom',
@@ -1075,11 +1083,11 @@ router.post("/sendEmail", adminAuthMiddleware, async (req, res) => {
       emailsToSend.join(', '),
       emailOption === 'everyone' ? 'broadcast' : 'custom'
     );
-    
+
     res.status(200).json({ message: "Emails sent successfully" });
   } catch (error) {
     console.error("Error sending emails:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Failed to send emails" });
   }
 });
 
