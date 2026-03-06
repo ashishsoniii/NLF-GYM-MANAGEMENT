@@ -10,7 +10,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import api from 'src/api/axios';
 
 
-export default function NewUserForm({ setClickedTitle }) {
+export default function NewUserForm({ setClickedTitle, fetchUsers }) {
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -178,9 +178,8 @@ export default function NewUserForm({ setClickedTitle }) {
 
       await api.post('/member/add', formData);
 
-
-
-
+      if (typeof fetchUsers === 'function') fetchUsers();
+      if (typeof setClickedTitle === 'function') setClickedTitle('all');
 
 
       // console.log(userData);
@@ -211,7 +210,6 @@ export default function NewUserForm({ setClickedTitle }) {
       });
       setSelectedPlan(null);
       setError('User Added Successfully');
-      setClickedTitle('All Users');
     } catch (errors) {
       setError(errors.response?.data?.error || 'Error adding user');
     } finally {
@@ -379,6 +377,7 @@ export default function NewUserForm({ setClickedTitle }) {
 
 NewUserForm.propTypes = {
   setClickedTitle: PropTypes.func,
+  fetchUsers: PropTypes.func,
 };
 
 

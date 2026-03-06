@@ -8,13 +8,19 @@ const Plan = require("../models/Plan");
 const adminAuthMiddleware = require("../middleware/authMiddleware");
 const memberAuthMiddleware = require("../middleware/memberAuthMiddleware");
 const { newUser } = require("./emailTemplates/newUser");
-const { invoiceHTML } = require("./emailTemplates/invoiceHTML");
-const puppeteer = require("puppeteer");
+const { paymentReceivedEmail } = require("./emailTemplates/paymentReceivedEmail");
 const Email = require("../models/Email"); // Import the Email model
 const sharp = require("sharp");
 const multer = require("multer");
 const upload = require("../middleware/multer");
 
+
+/** Format date for email/PDF (e.g. "4 Mar 2026") */
+function formatDateForEmail(d) {
+  if (!d) return "";
+  const date = d instanceof Date ? d : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 /** @param category one of: 'broadcast' | 'otp' | 'welcome' | 'invoice' | 'custom' */
 async function saveEmailRecord(userId, subject, emailContent, category = 'broadcast') {
@@ -27,24 +33,71 @@ async function saveEmailRecord(userId, subject, emailContent, category = 'broadc
   await emailRecord.save();
 }
 
-async function generatePDFfromHTML(htmlContent) {
-  const browser = await puppeteer.launch({
-    headless: true, // Set to true to run in headless mode (no browser window)
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    timeout: 60000, // Increase timeout to 60 seconds
-  });
+/**
+ * Generate invoice/receipt PDF with jsPDF (no Chrome required).
+ * @param {{ name, email, phone, latestPlanName, latestPaymentAmount, latestPaymentDate, duration, joiningDate, expiryDate }} data
+ * @returns {Buffer}
+ */
+function generateInvoicePDFWithJsPDF(data) {
+  const doc = new jsPDF();
+  const pageW = doc.internal.pageSize.getWidth();
+  let y = 20;
 
-  const page = await browser.newPage();
-  try {
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" }); // Wait until network is idle
-    const pdfBuffer = await page.pdf({ format: "A4" });
-    await browser.close();
-    return pdfBuffer;
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    await browser.close();
-    throw error;
-  }
+  doc.setFontSize(22);
+  doc.setFont(undefined, "bold");
+  doc.text("INVOICE / RECEIPT", pageW / 2, y, { align: "center" });
+  y += 14;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, "normal");
+  doc.text("No Limits Fitness", pageW / 2, y, { align: "center" });
+  doc.text("9982482431", pageW / 2, y + 5, { align: "center" });
+  y += 22;
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, y, pageW - 14, y);
+  y += 12;
+
+  doc.setFont(undefined, "bold");
+  doc.text("Bill To", 14, y);
+  y += 6;
+  doc.setFont(undefined, "normal");
+  doc.text(data.name || "", 14, y);
+  y += 5;
+  doc.text(data.email || "", 14, y);
+  y += 5;
+  doc.text(data.phone || "", 14, y);
+  y += 14;
+
+  doc.setFont(undefined, "bold");
+  doc.text("Date", 14, y);
+  doc.text(data.latestPaymentDate || "", 60, y);
+  y += 6;
+  doc.text("Validity", 14, y);
+  doc.text(`${data.joiningDate || ""} - ${data.expiryDate || ""}`, 60, y);
+  y += 14;
+
+  doc.line(14, y, pageW - 14, y);
+  y += 8;
+  doc.setFont(undefined, "bold");
+  doc.text("Plan", 14, y);
+  doc.text("Validity", 80, y);
+  doc.text("Duration", 130, y);
+  doc.text("Amount (₹)", 170, y);
+  y += 6;
+  doc.setFont(undefined, "normal");
+  doc.text(data.latestPlanName || "", 14, y);
+  doc.text(`${data.joiningDate || ""} - ${data.expiryDate || ""}`, 80, y);
+  doc.text(`${data.duration || 0} month(s)`, 130, y);
+  doc.text(String(data.latestPaymentAmount ?? ""), 170, y);
+  y += 14;
+
+  doc.setFont(undefined, "bold");
+  doc.text("Total", 14, y);
+  doc.text(`₹ ${data.latestPaymentAmount ?? ""}`, 170, y);
+
+  const arrayBuffer = doc.output("arraybuffer");
+  return Buffer.from(arrayBuffer);
 }
 
 // Error handling middleware for multer
@@ -132,34 +185,36 @@ router.post("/add", adminAuthMiddleware, upload.single("profileImage"), async (r
 
     const savedMember = await newMember.save();
 
-    // Prepare email content
-    const subject = "Welcome to the Gym!";
+    // Prepare email content (format dates for display)
+    const joiningStr = formatDateForEmail(joiningDate);
+    const expiryStr = formatDateForEmail(expiryDate);
+    const paymentDateStr = formatDateForEmail(latestPaymentDate);
+    const subject = "Welcome to NLF Gym – You’re In!";
     const html = newUser({
       name,
       email,
       phone,
       latestPlanName,
       latestPaymentAmount,
-      joiningDate,
-      expiryDate,
+      joiningDate: joiningStr,
+      expiryDate: expiryStr,
     });
 
-    const invoicehtml = invoiceHTML({
+    const invoiceData = {
       name,
       email,
       phone,
       latestPlanName,
-      latestPaymentDate,
+      latestPaymentDate: paymentDateStr,
       duration,
       latestPaymentAmount,
-      joiningDate,
-      expiryDate,
-    });
+      joiningDate: joiningStr,
+      expiryDate: expiryStr,
+    };
 
     let pdfBuffer;
     try {
-      // Generate PDF invoice from HTML
-      pdfBuffer = await generatePDFfromHTML(invoicehtml);
+      pdfBuffer = generateInvoicePDFWithJsPDF(invoiceData);
     } catch (error) {
       console.error("Error generating PDF, skipping email attachment:", error);
     }
@@ -691,56 +746,57 @@ router.post("/addPayment/:id", adminAuthMiddleware, async (req, res) => {
     // Save the updated member
     await member.save();
 
-    // Prepare email content
-    const subject = "Payment Confirmation";
-    const invoicehtml = invoiceHTML({
+    // Prepare email content (format dates for display)
+    const joiningStr = formatDateForEmail(joiningDate);
+    const expiryStr = formatDateForEmail(expiryDate);
+    const paymentDateStr = formatDateForEmail(newPayment.date);
+    const subject = "Payment Received – Your Receipt | NLF Gym";
+    const invoiceData = {
       name: member.name,
       email: member.email,
       phone: member.phone,
       latestPlanName: plan.name,
-      latestPaymentDate: newPayment.date,
+      latestPaymentDate: paymentDateStr,
       duration: plan.duration,
       latestPaymentAmount: amount,
-      joiningDate,
-      expiryDate,
-    });
+      joiningDate: joiningStr,
+      expiryDate: expiryStr,
+    };
 
-    console.log(member);
-    const html = newUser({
+    const emailBody = paymentReceivedEmail({
       name: member.name,
-      email: member.email,
-      phone: member.phone,
-      latestPlanName: plan.name,
-      latestPaymentAmount: amount,
-      joiningDate,
-      expiryDate,
+      planName: plan.name,
+      amount,
+      expiryDate: expiryStr,
     });
 
     try {
-      // Generate PDF and send email
-      const pdfBuffer = await generatePDFfromHTML(invoicehtml);
-
-      const emailSent = await sendEmailwithAttachment(
-        member.email,
-        subject,
-        html,
-        {
-          filename: "invoice.pdf",
-          content: pdfBuffer,
-        }
-      );
-
-      if (emailSent !== true) {
-        console.warn("Failed to send email, but proceeding without error.", emailSent?.code);
+      if (!member.email || !member.email.trim()) {
+        console.warn("Member has no email, skipping payment receipt email for", member.name);
       } else {
-        console.log("Email sent successfully.");
+      let pdfBuffer = null;
+      try {
+        pdfBuffer = generateInvoicePDFWithJsPDF(invoiceData);
+      } catch (pdfErr) {
+        console.warn("PDF generation failed for payment receipt, sending email without attachment:", pdfErr.message);
       }
 
-      // Save email record only if email was sent
-      await saveEmailRecord(member.name, subject, member.email, 'invoice');
+      const emailSent = pdfBuffer
+        ? await sendEmailwithAttachment(member.email, subject, emailBody, {
+            filename: "receipt.pdf",
+            content: pdfBuffer,
+          })
+        : await sendEmail(member.email, subject, emailBody);
+
+      if (emailSent === true) {
+        await saveEmailRecord(member.name, subject, member.email, "invoice");
+        console.log("Payment receipt email sent to", member.email);
+      } else {
+        console.warn("Payment receipt email failed to send:", emailSent?.code, "for", member.email);
+      }
+      }
     } catch (emailError) {
-      console.error("Error during email processing:", emailError);
-      // Continue with the process even if email fails
+      console.error("Error during payment receipt email:", emailError.message || emailError);
     }
 
     // Send success response to the client regardless of email status
@@ -1036,6 +1092,44 @@ router.post("/payment/verify", memberAuthMiddleware, async (req, res) => {
     const obj = updated.toObject();
     delete obj.profileImage;
     delete obj.__v;
+
+    // Send payment-received email with PDF receipt (jsPDF – no Chrome required)
+    try {
+      const joiningStr = formatDateForEmail(joiningDate);
+      const expiryStr = formatDateForEmail(expiryDate);
+      const paymentDateStr = formatDateForEmail(now);
+      const invoiceData = {
+        name: member.name,
+        email: member.email,
+        phone: member.phone || "",
+        latestPlanName: plan.name,
+        latestPaymentAmount: plan.price,
+        latestPaymentDate: paymentDateStr,
+        duration: plan.duration,
+        joiningDate: joiningStr,
+        expiryDate: expiryStr,
+      };
+      const pdfBuffer = generateInvoicePDFWithJsPDF(invoiceData);
+      const subject = "Payment Received – Your Receipt | NLF Gym";
+      const emailBody = paymentReceivedEmail({
+        name: member.name,
+        planName: plan.name,
+        amount: plan.price,
+        expiryDate: expiryStr,
+      });
+      const emailSent = await sendEmailwithAttachment(member.email, subject, emailBody, {
+        filename: "receipt.pdf",
+        content: pdfBuffer,
+      });
+      if (emailSent === true) {
+        await saveEmailRecord(member.name, subject, member.email, "invoice");
+      } else {
+        console.warn("Payment success but email not sent:", emailSent?.code);
+      }
+    } catch (emailErr) {
+      console.error("Payment success but failed to send receipt email:", emailErr);
+    }
+
     res.status(200).json({ message: "Payment successful", member: obj });
   } catch (error) {
     console.error("Payment verify error:", error);

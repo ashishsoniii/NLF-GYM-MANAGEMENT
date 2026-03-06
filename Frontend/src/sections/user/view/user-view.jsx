@@ -385,7 +385,11 @@ export default function UserPage() {
         </>
       )}
 
-      <Card>{clickedTitle === 'New Member' && <NewUserForm />}</Card>
+      <Card>
+        {clickedTitle === 'New Member' && (
+          <NewUserForm setClickedTitle={setClickedTitle} fetchUsers={fetchUsers} />
+        )}
+      </Card>
     </Container>
   );
 }

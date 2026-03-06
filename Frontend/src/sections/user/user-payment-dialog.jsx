@@ -119,7 +119,7 @@ function UserPaymentDialog({
         expiryDate: userData.expiryDate,
       };
       await api.post(`/member/addPayment/${id}`, paymentData);
-      fetchUsers();
+      if (typeof fetchUsers === 'function') await fetchUsers();
       setConfirmationEditOpen(false);
     } catch (error) {
       setError(error.response?.data?.error || error.message);
