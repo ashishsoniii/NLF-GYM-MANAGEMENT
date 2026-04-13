@@ -103,7 +103,7 @@ function transformPlans(planRows) {
   }));
 }
 
-function transformMembers(userRows, addressRows, enrollsRows) {
+function transformMembers(userRows, addressRows, enrollsRows, planRows) {
   const addressMap = {};
   addressRows.forEach(row => {
     addressMap[row[0]] = {
@@ -111,6 +111,18 @@ function transformMembers(userRows, addressRows, enrollsRows) {
       state: row[2],
       city: row[3],
       zipcode: row[4]
+    };
+  });
+
+  // Create plan mapping from old SQL plan IDs to plan details
+  const planMap = {};
+  planRows.forEach(row => {
+    planMap[row[0]] = {
+      planId: row[0],
+      planName: row[1],
+      description: row[2],
+      duration: parseInt(row[3]),
+      amount: parseInt(row[4])
     };
   });
 
@@ -136,13 +148,24 @@ function transformMembers(userRows, addressRows, enrollsRows) {
     enrollments.sort((a, b) => new Date(b.paidDate) - new Date(a.paidDate));
 
     const latestEnrollment = enrollments[0];
-    const payments = enrollments.map(enrollment => ({
-      amount: 0,
-      date: enrollment.paidDate,
-      method: 'Cash',
-      planName: enrollment.planId,
-      expiryDate: enrollment.expireDate
-    }));
+    const latestPlan = latestEnrollment ? planMap[latestEnrollment.planId] : null;
+
+    const payments = enrollments.map(enrollment => {
+      const planInfo = planMap[enrollment.planId] || {};
+      return {
+        amount: planInfo.amount || 0,
+        date: enrollment.paidDate,
+        joiningDate: row[6],
+        expiryDate: enrollment.expireDate,
+        paymentMethod: 'Cash',
+        plan: {
+          planId: null,
+          name: planInfo.planName || enrollment.planId,
+          duration: planInfo.duration || null,
+          price: planInfo.amount || null
+        }
+      };
+    });
 
     return {
       name: row[1],
@@ -154,8 +177,8 @@ function transformMembers(userRows, addressRows, enrollsRows) {
       joiningDate: row[6],
       expiryDate: latestEnrollment ? latestEnrollment.expireDate : null,
       latestPaymentDate: latestEnrollment ? latestEnrollment.paidDate : null,
-      latestPaymentAmount: 0,
-      latestPlanName: latestEnrollment ? latestEnrollment.planId : null,
+      latestPaymentAmount: latestPlan ? latestPlan.amount : 0,
+      latestPlanName: latestPlan ? latestPlan.planName : null,
       payments: payments,
       workoutType: 'General',
       assignedTrainer: null,
@@ -312,7 +335,7 @@ async function main() {
     console.log(`Found ${planRows.length} plans, ${userRows.length} users, ${addressRows.length} addresses, ${enrollsRows.length} enrollments`);
 
     const plans = transformPlans(planRows);
-    const members = transformMembers(userRows, addressRows, enrollsRows);
+    const members = transformMembers(userRows, addressRows, enrollsRows, planRows);
 
     console.log(`Transformed ${plans.length} plans and ${members.length} members`);
 
