@@ -1,0 +1,31 @@
+Frontend/src/sections/user/user-table-head.jsx
+  66144c5e508b9759 45-61
+Backend/scripts/import-sql-data.js
+  66144c5e508b9759 1-352
+Frontend/src/sections/user/utils.js
+  66144c5e508b9759 18-25,28,31-51,54
+Backend/scripts/IMPORT_README.md
+  66144c5e508b9759 1-93
+Backend/scripts/verify-import.js
+  66144c5e508b9759 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.19",
+  "base_commit_sha": "7dc226b3a9e93dac5ab7b5abd26f612e3c41c3bd",
+  "prompts": {
+    "66144c5e508b9759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aec9f99-bd6e-4b7f-ba24-dfa8bad0ae2f",
+        "model": "claude-haiku-4-5-20251001"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>",
+      "messages": [],
+      "total_additions": 558,
+      "total_deletions": 30,
+      "accepted_lines": 545,
+      "overriden_lines": 0
+    }
+  }
+}
