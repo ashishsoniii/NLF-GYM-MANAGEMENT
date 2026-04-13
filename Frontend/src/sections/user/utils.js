@@ -15,16 +15,43 @@ export function emptyRows(page, rowsPerPage, arrayLength) {
 }
 
 function descendingComparator(a, b, orderBy) {
-  if (a[orderBy] === null) {
+  // Map planName to latestPlanName for sorting
+  const actualOrderBy = orderBy === 'planName' ? 'latestPlanName' : orderBy;
+
+  let aValue = a[actualOrderBy];
+  let bValue = b[actualOrderBy];
+
+  // Handle null/undefined values
+  if (aValue === null || aValue === undefined) {
     return 1;
   }
-  if (b[orderBy] === null) {
+  if (bValue === null || bValue === undefined) {
     return -1;
   }
-  if (b[orderBy] < a[orderBy]) {
+
+  // Handle date fields (joiningDate, expiryDate)
+  if (actualOrderBy === 'joiningDate' || actualOrderBy === 'expiryDate') {
+    const aDate = new Date(aValue);
+    const bDate = new Date(bValue);
+
+    // Check for invalid dates
+    if (Number.isNaN(aDate.getTime())) return 1;
+    if (Number.isNaN(bDate.getTime())) return -1;
+
+    return bDate - aDate;
+  }
+
+  // Handle string fields (case-insensitive comparison)
+  if (typeof aValue === 'string' && typeof bValue === 'string') {
+    aValue = aValue.toLowerCase();
+    bValue = bValue.toLowerCase();
+  }
+
+  // Standard comparison
+  if (bValue < aValue) {
     return -1;
   }
-  if (b[orderBy] > a[orderBy]) {
+  if (bValue > aValue) {
     return 1;
   }
   return 0;
