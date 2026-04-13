@@ -15,8 +15,13 @@ export function emptyRows(page, rowsPerPage, arrayLength) {
 }
 
 function descendingComparator(a, b, orderBy) {
-  // Map planName to latestPlanName for sorting
-  const actualOrderBy = orderBy === 'planName' ? 'latestPlanName' : orderBy;
+  // Map display field names to actual data field names
+  let actualOrderBy = orderBy;
+  if (orderBy === 'planName') {
+    actualOrderBy = 'latestPlanName';
+  } else if (orderBy === 'status') {
+    actualOrderBy = 'isActive';
+  }
 
   let aValue = a[actualOrderBy];
   let bValue = b[actualOrderBy];
@@ -29,8 +34,8 @@ function descendingComparator(a, b, orderBy) {
     return -1;
   }
 
-  // Handle date fields (joiningDate, expiryDate)
-  if (actualOrderBy === 'joiningDate' || actualOrderBy === 'expiryDate') {
+  // Handle date fields (joiningDate, expiryDate, dateOfBirth)
+  if (actualOrderBy === 'joiningDate' || actualOrderBy === 'expiryDate' || actualOrderBy === 'dateOfBirth') {
     const aDate = new Date(aValue);
     const bDate = new Date(bValue);
 
@@ -39,6 +44,14 @@ function descendingComparator(a, b, orderBy) {
     if (Number.isNaN(bDate.getTime())) return -1;
 
     return bDate - aDate;
+  }
+
+  // Handle boolean fields (isActive)
+  if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+    // true (active) should come before false (inactive) in descending order
+    if (bValue === aValue) return 0;
+    if (bValue) return -1;
+    return 1;
   }
 
   // Handle string fields (case-insensitive comparison)
