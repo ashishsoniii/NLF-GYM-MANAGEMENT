@@ -1,0 +1,25 @@
+Backend/scripts/fix-plan-names-and-amounts.js
+  66144c5e508b9759 1-123
+Backend/scripts/import-sql-data.js
+  66144c5e508b9759 106,117-125,151,153-168,180-181,338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "6971d3867f969fea6a3b2025850192df44404998",
+  "prompts": {
+    "66144c5e508b9759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aec9f99-bd6e-4b7f-ba24-dfa8bad0ae2f",
+        "model": "claude-haiku-4-5-20251001"
+      },
+      "human_author": "Ashish Soni",
+      "messages": [],
+      "total_additions": 166,
+      "total_deletions": 20,
+      "accepted_lines": 157,
+      "overriden_lines": 0
+    }
+  }
+}
