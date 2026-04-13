@@ -1,0 +1,25 @@
+Backend/scripts/check-member-structure.js
+  66144c5e508b9759 1-27
+Frontend/src/sections/user/utils.js
+  66144c5e508b9759 18-24,37-38,49-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "ea1df4c8c98ba7423509cd7bc8ddda3f73ce1b98",
+  "prompts": {
+    "66144c5e508b9759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aec9f99-bd6e-4b7f-ba24-dfa8bad0ae2f",
+        "model": "claude-haiku-4-5-20251001"
+      },
+      "human_author": "Ashish Soni",
+      "messages": [],
+      "total_additions": 45,
+      "total_deletions": 5,
+      "accepted_lines": 44,
+      "overriden_lines": 0
+    }
+  }
+}
