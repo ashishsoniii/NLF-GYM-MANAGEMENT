@@ -8,7 +8,6 @@ import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
 
 import api from 'src/api/axios';
 
@@ -18,17 +17,14 @@ import AddPlanForm from './form-new-plan';
 import TableNoData from '../table-no-data';
 import UserTableRow from '../plan-table-row';
 import UserTableHead from '../plan-table-head';
-import TableEmptyRows from '../table-empty-rows';
 import PlanTableSkeleton from '../table-skeleton';
 import UserTableToolbar from '../plan-table-toolbar';
 import AppWidgetSummary from '../app-widget-summary';
-import { emptyRows, applyFilter, getComparator } from '../utils';
+import { applyFilter, getComparator } from '../utils';
 
 // ----------------------------------------------------------------------
 
 export default function PlanPage() {
-  const [page, setPage] = useState(0);
-
   const [clickedTitle, setClickedTitle] = useState('All Plans');
 
   const [plans, setPlans] = useState([]);
@@ -40,8 +36,6 @@ export default function PlanPage() {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
-
-  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [tableLoading, setTableLoading] = useState(true);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
@@ -107,17 +101,7 @@ export default function PlanPage() {
     setSelected(newSelected);
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
-  };
-
   const handleFilterByName = (event) => {
-    setPage(0);
     setFilterName(event.target.value);
   };
 
@@ -197,31 +181,24 @@ export default function PlanPage() {
                   />
                   <TableBody>
                     {(tableLoading || (!hasFetchedOnce && plans.length === 0)) ? (
-                      <PlanTableSkeleton rowCount={rowsPerPage} />
+                      <PlanTableSkeleton rowCount={5} />
                     ) : (
                       <>
-                        {dataFiltered
-                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                          .map((row) => (
-                            <UserTableRow
-                              fetchPlans={fetchPlans}
-                              key={row._id}
-                              id={row._id}
-                              name={row.name}
-                              duration={row.duration}
-                              description={row.description}
-                              price={row.price}
-                              status={row.isActive ? 'active' : 'inactive'}
-                              avatarUrl={row.avatarUrl}
-                              selected={selected.indexOf(row.name) !== -1}
-                              handleClick={(event) => handleClick(event, row.name)}
-                            />
-                          ))}
-
-                        <TableEmptyRows
-                          height={77}
-                          emptyRows={emptyRows(page, rowsPerPage, plans.length)}
-                        />
+                        {dataFiltered.map((row) => (
+                          <UserTableRow
+                            fetchPlans={fetchPlans}
+                            key={row._id}
+                            id={row._id}
+                            name={row.name}
+                            duration={row.duration}
+                            description={row.description}
+                            price={row.price}
+                            status={row.isActive ? 'active' : 'inactive'}
+                            avatarUrl={row.avatarUrl}
+                            selected={selected.indexOf(row.name) !== -1}
+                            handleClick={(event) => handleClick(event, row.name)}
+                          />
+                        ))}
 
                         {notFound && <TableNoData query={filterName} />}
                       </>
@@ -231,15 +208,6 @@ export default function PlanPage() {
               </TableContainer>
             </Scrollbar>
 
-            <TablePagination
-              page={page}
-              component="div"
-              count={plans.length}
-              rowsPerPage={rowsPerPage}
-              onPageChange={handleChangePage}
-              rowsPerPageOptions={[5, 10, 25]}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
           </>
         )}{' '}
         {clickedTitle === 'New Plan' && (
