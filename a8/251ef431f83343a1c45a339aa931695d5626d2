@@ -1,0 +1,19 @@
+.gitignore
+  s_1eb9a04fe57564::t_c57c200352962a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "a8251ef431f83343a1c45a339aa931695d5626d2",
+  "prompts": {},
+  "sessions": {
+    "s_1eb9a04fe57564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce67cdb5-18dc-49cf-a142-44b980d0715a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>"
+    }
+  }
+}
