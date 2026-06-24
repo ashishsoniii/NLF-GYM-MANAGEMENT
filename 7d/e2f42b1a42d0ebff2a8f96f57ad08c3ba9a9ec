@@ -1,0 +1,35 @@
+CLAUDE.md
+  s_48dbc3999471d7::t_03ed9897f97041 1-72
+Frontend/src/sections/plan/view/plan-view.jsx
+  s_1eb9a04fe57564::t_4ebb96741e3496 23
+  s_1eb9a04fe57564::t_6828037f2874a7 184,187-201
+start.sh
+  s_1eb9a04fe57564::t_dd71cfea5364fa 1-37
+Frontend/src/sections/user/view/user-view.jsx
+  s_1eb9a04fe57564::t_bca9bef436f4b1 25
+  s_1eb9a04fe57564::t_12468c203ec79f 327,330-352
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "7de2f42b1a42d0ebff2a8f96f57ad08c3ba9a9ec",
+  "prompts": {},
+  "sessions": {
+    "s_1eb9a04fe57564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce67cdb5-18dc-49cf-a142-44b980d0715a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>"
+    },
+    "s_48dbc3999471d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0de9087-5f07-45ee-92dc-aa7ecc506603",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>"
+    }
+  }
+}
