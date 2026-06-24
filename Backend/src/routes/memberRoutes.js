@@ -676,6 +676,50 @@ router.delete("/delete/:id", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+// Get a single member by ID (admin)
+router.get("/detail/:id", adminAuthMiddleware, async (req, res) => {
+  try {
+    const member = await Member.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+    res.status(200).json({ member });
+  } catch (error) {
+    console.error("Error fetching member:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Remove a specific payment from a member's payments array
+router.delete("/:id/payment/:paymentId", adminAuthMiddleware, async (req, res) => {
+  try {
+    const member = await Member.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+    const paymentIndex = member.payments.findIndex(
+      (p) => p._id.toString() === req.params.paymentId
+    );
+    if (paymentIndex === -1) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+    member.payments.splice(paymentIndex, 1);
+    // Recalculate denormalized fields from the most recent remaining payment
+    if (member.payments.length > 0) {
+      const latest = member.payments[member.payments.length - 1];
+      member.latestPaymentDate = latest.date;
+      member.latestPlanName = latest.plan?.name || '';
+      member.expiryDate = latest.expiryDate;
+      member.membershipPlan = latest.plan?.planId || member.membershipPlan;
+    }
+    await member.save();
+    res.status(200).json({ message: "Payment removed successfully", member });
+  } catch (error) {
+    console.error("Error removing payment:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Route to modify a member's details
 router.put("/modify/:id", adminAuthMiddleware, async (req, res) => {
   try {

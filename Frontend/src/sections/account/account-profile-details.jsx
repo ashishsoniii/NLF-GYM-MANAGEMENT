@@ -12,6 +12,8 @@ import {
   Unstable_Grid2 as Grid,
 } from '@mui/material';
 
+import api from 'src/api/axios';
+
 import PlanPage from './plan/view/plan-view';
 
 // const user = window.sessionStorage.getItem("user");
@@ -28,9 +30,9 @@ export const AccountProfileDetails = ({ curentUser }) => {
     latestPlanName: curentUser.latestPlanName,
     latestPaymentDate: curentUser.latestPaymentDate,
     membershipPlan: curentUser.membershipPlan,
-    payments: curentUser.payments,
     workoutType: curentUser.workoutType,
   });
+  const [localPayments, setLocalPayments] = useState(curentUser.payments || []);
 
   useEffect(() => {
     setValues({
@@ -44,10 +46,19 @@ export const AccountProfileDetails = ({ curentUser }) => {
       latestPlanName: curentUser.latestPlanName,
       latestPaymentDate: curentUser.latestPaymentDate,
       membershipPlan: curentUser.membershipPlan,
-      payments: curentUser.payments,
       workoutType: curentUser.workoutType,
     });
+    setLocalPayments(curentUser.payments || []);
   }, [curentUser]);
+
+  const refetchMember = useCallback(async () => {
+    try {
+      const res = await api.get(`/member/detail/${curentUser._id}`);
+      setLocalPayments(res.data.member.payments || []);
+    } catch (e) {
+      // silently ignore
+    }
+  }, [curentUser._id]);
 
   const handleChange = useCallback((event) => {
     setValues((prevState) => ({
@@ -179,7 +190,12 @@ export const AccountProfileDetails = ({ curentUser }) => {
         </CardContent>
 
         <Divider />
-        <PlanPage payments={values.payments} />
+        <PlanPage
+          payments={localPayments}
+          memberId={curentUser._id}
+          curentUser={curentUser}
+          onPaymentChange={refetchMember}
+        />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
           {/* <Button variant="contained">Save details</Button> */}
         </CardActions>
