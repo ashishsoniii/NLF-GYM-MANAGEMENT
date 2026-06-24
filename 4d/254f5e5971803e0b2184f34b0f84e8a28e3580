@@ -1,0 +1,27 @@
+Frontend/src/sections/account/plan/view/plan-view.jsx
+  s_1eb9a04fe57564::t_950f0dc9298b12 2,4,6,11,14-16,22,26,31,43,49-50,53,81-93,96-135,137-142,144-153,159-162
+Backend/src/routes/memberRoutes.js
+  s_1eb9a04fe57564::t_9e6a30a8a3078e 679-722
+Frontend/src/sections/account/plan/plan-table-row.jsx
+  s_1eb9a04fe57564::t_55f00420779311 2,4-5,9-13,15-16,24,32,34-56,60-61,63-66,70,73,77,79,81-85,88-102,108,110-111,114-118
+Frontend/src/sections/account/account-profile-details.jsx
+  s_1eb9a04fe57564::t_101bc4a81b16e6 35,51,54-61
+  s_1eb9a04fe57564::t_4c1d2be81baed7 193-198
+  s_1eb9a04fe57564::t_197528cc7cafe9 15-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "4d254f5e5971803e0b2184f34b0f84e8a28e3580",
+  "prompts": {},
+  "sessions": {
+    "s_1eb9a04fe57564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce67cdb5-18dc-49cf-a142-44b980d0715a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>"
+    }
+  }
+}
