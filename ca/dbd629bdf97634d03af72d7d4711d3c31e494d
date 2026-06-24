@@ -1,0 +1,23 @@
+Frontend/src/sections/plan/view/plan-view.jsx
+  s_1eb9a04fe57564::t_fb7e600cfa85d5 5
+  s_1eb9a04fe57564::t_190ebbef7e0eca 120-125
+Frontend/src/sections/user/view/user-view.jsx
+  s_1eb9a04fe57564::t_074b3ce5e4f0b1 155-160
+  s_1eb9a04fe57564::t_8971d66bf5d04f 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "cadbd629bdf97634d03af72d7d4711d3c31e494d",
+  "prompts": {},
+  "sessions": {
+    "s_1eb9a04fe57564": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce67cdb5-18dc-49cf-a142-44b980d0715a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Ashish Soni <ashishsoni2002@gmail.com>"
+    }
+  }
+}
