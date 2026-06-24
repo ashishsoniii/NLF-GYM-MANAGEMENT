@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Container from '@mui/material/Container';
@@ -116,8 +117,12 @@ export default function PlanPage() {
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Plans</Typography>
-
+        <Stack direction="row" alignItems="center" gap={2}>
+          <Typography variant="h4">Plans</Typography>
+          {!tableLoading && (
+            <Chip label={`${plans.length} total`} color="primary" size="small" />
+          )}
+        </Stack>
       </Stack>
 
       <Grid container spacing={3} m={5} gap={4}>

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -151,7 +152,12 @@ export default function UserPage() {
     <Container>
       {/* btn code for all user - but not requres as card has been created! */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Users</Typography>
+        <Stack direction="row" alignItems="center" gap={2}>
+          <Typography variant="h4">Users</Typography>
+          {!tableLoading && (
+            <Chip label={`${users.length} total`} color="primary" size="small" />
+          )}
+        </Stack>
         {/* <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
         </Button> */}
